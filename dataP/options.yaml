@@ -1,0 +1,46 @@
+version: 3
+
+expert_count: 20
+
+options:
+  ssq:
+    name: '双色球'
+    url: 'https://www.cjcp.com.cn/showsortinfo.php?id=401040307'
+    params:
+      page:
+
+  dlt:
+    name: '大乐透'
+    url: 'https://www.cjcp.com.cn/showsortinfo.php?id=1040403031'
+    params:
+      page:
+
+  qlc:
+    name: '七乐彩'
+    url: 'https://www.cjcp.com.cn/showsortinfo.php?id=2030403011'
+    params:
+      page:
+
+#  fc3d:
+#    name: '福彩３Ｄ'
+#    url: 'https://www.cjcp.com.cn/showsortinfo.php?id=1040403031'
+#    params:
+#      page:
+
+#  qxc:
+#    name: '七星彩'
+#    url: 'https://www.cjcp.com.cn/showsortinfo.php?id=1040403031'
+#    params:
+#      page:
+#
+#  pls:
+#    name: '排列３'
+#    url: 'https://www.cjcp.com.cn/showsortinfo.php?id=1040403031'
+#    params:
+#      page:
+#
+#  plw:
+#    name: '排列５'
+#    url: 'https://www.cjcp.com.cn/showsortinfo.php?id=1040403031'
+#    params:
+#      page:

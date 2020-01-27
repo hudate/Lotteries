@@ -1,0 +1,149 @@
+{
+    "run_times": 0,
+
+    "mail_options": {
+        "#注释1": "收件人邮件列表",
+        "receivers": [
+            "xxxx@xxxx.com",
+            "xxxx@xxxx.com"
+        ],
+
+        "#注释2": "发件人",
+        "sender": "xxxx@xxxx.com",
+
+        "#注释3": "口令/密码",
+        "password": "xxxx"
+    },
+
+    "cjw_options": {
+        "account": "xxxx",
+        "password": "xxxx",
+        "is_publish_predict_result": 0,
+        "expert_id": "xxxx"
+    },
+
+    "common_actions_time": {
+        "get_lotteries_data": "04:10",
+        "get_proxies": "04:15",
+        "get_the_next_stage_experts": "04:40",
+        "get_the_next_stage_experts_articles_list": "05:00",
+        "get_the_next_stage_experts_again": "06:20",
+        "get_the_next_stage_experts_articles_list_again": "07:40",
+        "get_the_next_stage_experts_articles_list_third": "08:20",
+        "get_the_next_stage_experts_all_predict_data": "09:10",
+        "get_the_next_stage_experts_all_predict_data_again": "10:30",
+        "get_proxies_again": "11:20",
+        "check_the_next_stage_experts_articles_list": "11:40",
+        "get_the_next_stage_experts_articles_list_fourth": "11:45",
+        "get_the_next_stage_experts_all_predict_data_third": "12:25",
+        "get_the_next_stage_experts_articles_list_fifth": "13:15",
+        "get_the_next_stage_experts_all_predict_data_fourth": "14:25",
+        "get_the_next_stage_experts_all_predict_data_fifth": "16:00",
+        "get_the_next_stage_experts_list": "16:40"
+    },
+
+    "real_actions_time": {
+        "get_the_next_stage_experts_predict_data": "16:50",
+        "publish_result": "17:10",
+        "send_mail": "17:20",
+        "send_mail_again": "17:25",
+        "clear_database": "23:40"
+    },
+
+    "test_actions_time": {
+        "get_now_stage_lottery_data": "22:55",
+        "get_the_next_stage_experts_predict_data": "23:10",
+        "check_right_ratio": "23:15",
+        "send_mail": "23:20",
+        "send_mail_again": "23:30",
+        "clear_database": "23:40"
+    },
+
+    "start_end_times": {
+        "start_time": "03:50",
+        "end_time": "23:45"
+    },
+
+    "dlt": {
+        "analyse_stages_count": 20,
+        "front_predict_expert_count": 10,
+        "front_kill_expert_count": 10,
+        "back_predict_expert_count": 10,
+        "back_kill_expert_count": 10,
+        "front_predict_balls_count": 25,
+        "front_kill_balls_count": 0,
+        "back_predict_balls_count": 6,
+        "back_kill_balls_count": 0
+    },
+
+    "ssq": {
+        "analyse_stages_count": 20,
+        "front_predict_expert_count": 10,
+        "front_kill_expert_count": 10,
+        "back_predict_expert_count": 10,
+        "back_kill_expert_count": 10,
+        "front_predict_balls_count":25,
+        "front_kill_balls_count": 0,
+        "back_predict_balls_count": 5,
+        "back_kill_balls_count": 0
+    },
+
+    "dlt_group": {
+        "analyse_stages_count": [30, 20, 15, 10, 7, 5],
+        "front_predict_expert_count": [30, 20, 15, 10, 5],
+        "front_kill_expert_count": [30, 20, 15, 10, 5],
+        "back_predict_expert_count": [30, 20, 15, 10, 5],
+        "back_kill_expert_count": [30, 20, 15, 10, 5],
+        "front_predict_balls_count": [25, 20, 10],
+        "front_bold_balls_count": [1, 2, 3],
+        "front_kill_balls_count": [3, 6],
+        "front_head_count": 2,
+        "front_tail_count": 2,
+        "back_predict_balls_count": [6, 1, 2],
+        "back_kill_balls_count": [3]
+    },
+
+    "ssq_group": {
+        "analyse_stages_count": [30, 20, 15, 10, 7, 5],
+        "front_predict_expert_count": [30, 20, 15, 10, 5],
+        "front_kill_expert_count": [30, 20, 15, 10, 5],
+        "back_predict_expert_count": [30, 20, 15, 10, 5],
+        "back_kill_expert_count": [30, 20, 15, 10, 5],
+        "front_predict_balls_count": [25, 20, 12],
+        "front_bold_balls_count": [1, 2, 3],
+        "front_kill_balls_count": [3, 6],
+        "front_head_count": 2,
+        "front_tail_count": 2,
+        "back_predict_balls_count": [3, 5],
+        "back_kill_balls_count": [5]
+    },
+
+    "dlt_group_cn": {
+        "front_predict_balls_count": "前区%s码",
+        "front_bold_balls_count": "前区%s胆",
+        "front_kill_balls_count": "前区杀%s码",
+        "front_head_count": "前区龙头两码",
+        "front_tail_count": "前区凤尾两码",
+        "back_predict_balls_count": "后区定%s码",
+        "back_kill_balls_count": "后区杀%s码"
+    },
+
+    "ssq_group_cn": {
+        "front_predict_balls_count": "红球%s码",
+        "front_bold_balls_count": "红球%s胆",
+        "front_kill_balls_count": "红球杀%s码",
+        "front_head_count": "红球龙头两码",
+        "front_tail_count": "红球凤尾两码",
+        "back_predict_balls_count": "蓝球杀%s码",
+        "back_kill_balls_count": "蓝球定%s码"
+    },
+
+    "num2cn": {"1": "独", "2": "双", "3": "三", "5": "五", "6": "六", "10": "10", "12": "12", "20": "20", "25": "25"},
+
+    "#注释4": {
+        "dlt/ssq": "预测参数：用于预测每期的参数",
+        "dlt_group/ssq_group": "计算预测参数",
+        "dlt_group_cn/ssq_group_cn": "把英语的key对应到汉字的key，以便发表预测数据。",
+        "num2cn": "把数字变为网站数据中需要的字"
+    }
+}

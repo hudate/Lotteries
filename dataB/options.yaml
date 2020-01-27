@@ -1,0 +1,40 @@
+version: 3
+
+stage_count: 150   # 获取多少期的数据     #    # 获取数据的url
+
+options:
+
+  ssq:
+    name: '双色球'
+    url: 'https://datachart.500.com/ssq/zoushi/newinc/jbzs_redblue.php?'
+    expect: stage_count
+
+  dlt:
+    name: '大乐透'
+    url: 'https://datachart.500.com/dlt/zoushi/newinc/jbzs_foreback.php?'
+    expect: stage_count
+
+  qlc:
+    name: '七乐彩'
+    url: 'https://datachart.500.com/qlc/zoushi/newinc/jbzs_sanf.php?'
+    expect: stage_count
+
+  fc3d:
+    name: '福彩3D'
+    url: 'https://datachart.500.com/sd/zoushi/newinc/jbzs.php?'
+    expect: stage_count
+
+  qxc:
+    name: '七星彩'
+    url: 'https://datachart.500.com/qxc/zoushi/newinc/jbzs.php?'
+    expect: stage_count
+
+  pls:
+    name: '排列3'
+    url: 'https://datachart.500.com/pls/zoushi/newinc/jbzs.php?'
+    expect: stage_count
+
+  plw:
+    name: '排列5'
+    url: 'https://datachart.500.com/plw/zoushi/newinc/jbzs.php?'
+    expect: stage_count
