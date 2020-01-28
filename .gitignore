@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-*setup.json
+setup.json
 record/
 throw/
 log/

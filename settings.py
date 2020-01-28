@@ -128,7 +128,7 @@ LOTTERY_BALLS_COUNT = {'ssq': [6, 1], 'dlt': [5, 2]}
 BASE_DIR = os.path.expanduser('~') + os.sep + 'Lotteries'
 
 SETUP_FILE = os.sep.join([BASE_DIR, 'setup.json'])
-SETUP_EXAMPLE = os.sep.join([BASE_DIR, 'setup_example.json'])
+SETUP_TEMPLATE = os.sep.join([BASE_DIR, 'setup_template.json'])
 
 # 日期-彩票-期数
 DATA_FILE = os.sep.join([BASE_DIR, 'record', '%s_%s_%s.json'])        # 用于保存各种中间数据

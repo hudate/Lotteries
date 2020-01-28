@@ -77,12 +77,49 @@ def remove_browser_tmp(tmp_dir):
 
 
 def set_mail_sender():
-    pass
+    sender = input('请输入发件人：')
+    password = input('请输入对应密码：')
+    if sender.strip() == '' or password.strip() == '':
+        print('error:\t发件人或者密码不能为空！')
+        set_mail_sender()
+
+    if '@' not in sender:
+        print('error:\t发件人格式有误，"@"不在发件人中！！！')
+        set_mail_sender()
+
+    if sender.startswith('@') or sender.endswith('@'):
+        print('error:\t发件人格式有误，发件人以"@"开头或者结尾！！！')
+        set_mail_sender()
+
+    return sender, password
 
 
 def set_mail_receivers():
-    pass
+    receivers = []
+    _receivers = input('请输入收件人列（多个收件人之间请使用","分割，注意不要空格）)：')
+    if ' ' in _receivers:
+        print('error:\t收件人列表不能包含空格！！！')
+        set_mail_receivers()
+    else:
+        receivers = _receivers.strip('[').strip(']').strip(',').split(',')
+        receivers = [receiver.strip('"') for receiver in receivers]
+    for receiver in receivers:
+        if '@' not in receiver:
+            print('error:\t"@"不在某一个收件人中！！！')
+            set_mail_receivers()
+
+        if receiver.startswith('@') or receiver.endswith('@'):
+            print('error:\t某个收件人以"@"开头或者结尾！！！')
+            set_mail_receivers()
+
+    return list(set(receivers))
 
 
 def set_cjw_account():
-    pass
+    account = input('请输入彩经网登录用户：')
+    password = input('请输入对应密码：')
+    if account.strip() == '' or password.strip() == '':
+        print('error:\t发件人或者密码不能为空！')
+        set_cjw_account()
+
+    return account, password

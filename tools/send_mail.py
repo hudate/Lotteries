@@ -38,7 +38,7 @@ class SendMail(object):
 
     def set_message(self):
         subject_real = "预测邮件：彩票预测"  # 邮件主题
-        subject_test = "测试邮件：彩票预测"  # 邮件主题
+        subject_test = "测试邮件：彩票预测"
         content_real = '''
         <h3 style="color:#07f"><pre>  第<font color="#f70" face="sans-serif"><u>%s</u></font>期 <font color="#80e" face="sans-serif"><u>%s</u></font>:</pre></h3>
         <h4 style="color:#red;font:{"Arial",12}"><pre>     前区：<font color="#f00" face="sans-serif">%s</font></pre></h4>
@@ -118,7 +118,7 @@ class SendMail(object):
             try:
                 smtp = smtplib.SMTP_SSL("smtp.163.com", 994)  # 实例化smtp服务器
                 smtp.login(self.sender, self.password)  # 发件人登录
-                smtp.sendmail(self.sender, '1258670852@qq.com', self.message.as_string())
+                smtp.sendmail(self.sender, 'hbombdate@163.com', self.message.as_string())
                 smtp.close()
             except Exception as e:
                 logger.error('发送邮件失败！ 失败原因：%s' % e)

@@ -4,7 +4,7 @@ monkey.patch_all()
 
 import os
 from settings import DAYS_DICT, avoid_experts_db, LOTTERY_DICT_2, DATA_FILE, \
-    miss_urls_db, SETUP_FILE, BASE_DIR, SETUP_EXAMPLE, saved_db, REAL
+    miss_urls_db, SETUP_FILE, BASE_DIR, saved_db, REAL, SETUP_TEMPLATE
 
 os.chdir(BASE_DIR)
 
@@ -190,7 +190,6 @@ def start_ctrl(lottery, now_stage, work_times):
                         logger.error(e)
 
                 time.sleep(15)      # 为了防止某些操作一分钟内执行了两次
-
         logger.info('休息中...')
         time.sleep(50)
 
@@ -237,18 +236,21 @@ def start():
 def first_run(data):
     # TODO
     # 1. 各种条件判断，包括安装所需库，软件环境判断,以及当前work_dir
-    # 2. 复制mail_setup_templete.json -> mail_setup.json
+    # 2. 复制setup_template.json -> setup.json
     # 3. 提示修改邮箱密码，收/发件人
-
-    mail_sender, mail_passsword = set_mail_sender()
-    mail_receivers = set_mail_receivers()
-
-    cjw_account, cjw_password = set_cjw_account()
 
     for lottery in ['ssq', 'dlt']:
         bag = abg.Begin(lottery)  # 获取往期的开奖数据
         bag.begin()
 
+    mail_sender, mail_password = set_mail_sender()
+    mail_receivers = set_mail_receivers()
+    cjw_account, cjw_password = set_cjw_account()
+    data['mail_options']['sender'] = mail_sender
+    data['mail_options']['password'] = mail_password
+    data['mail_options']['receivers'] = mail_receivers
+    data['cjw_options']['account'] = cjw_account
+    data['cjw_options']['password'] = cjw_password
     data['run_times'] = 1
     with open(SETUP_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f)
@@ -265,12 +267,12 @@ def other_test():
 
 if __name__ == '__main__':
     if not os.path.exists(SETUP_FILE):
-        os.system('mv %s %s' % (SETUP_EXAMPLE, SETUP_FILE))
-        raise ValueError('清先修改“mail_setup.json”文件中的内容！！！')
+        os.system('cp -f %s %s' % (SETUP_TEMPLATE, SETUP_FILE))
 
     with open(SETUP_FILE, 'r') as f:
         content = json.load(f)
         is_first_run = content['run_times']     # 若setup.json文件中的run_times为0,则认为需要进行第一次爬取
+
     if not is_first_run:
         first_run(content)
 
