@@ -267,9 +267,12 @@ def other_test():
 
 if __name__ == '__main__':
     if not os.path.exists(SETUP_FILE):
-        os.system('cp -f %s %s' % (SETUP_TEMPLATE, SETUP_FILE))
+        if os.name == 'nt':
+            os.system('xcopy %s %s' % (SETUP_TEMPLATE, SETUP_FILE))
+        else:
+            os.system('cp -f %s %s' % (SETUP_TEMPLATE, SETUP_FILE))
 
-    with open(SETUP_FILE, 'r') as f:
+    with open(SETUP_FILE, 'r', encoding='utf-8') as f:
         content = json.load(f)
         is_first_run = content['run_times']     # 若setup.json文件中的run_times为0,则认为需要进行第一次爬取
 
