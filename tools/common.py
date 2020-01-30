@@ -81,17 +81,9 @@ def remove_browser_tmp(tmp_dir):
 def set_mail_sender():
     sender = input('请输入发件人：')
     password = input('请输入对应密码：')
-    if sender.strip() == '' or password.strip() == '':
-        print('error:\t发件人或者密码不能为空！')
-        set_mail_sender()
-
-    if '@' not in sender:
-        print('error:\t发件人格式有误，"@"不在发件人中！！！')
-        set_mail_sender()
-
-    if sender.startswith('@') or sender.endswith('@'):
-        print('error:\t发件人格式有误，发件人以"@"开头或者结尾！！！')
-        set_mail_sender()
+    find_str = re.compile(r'^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9\u4e00-\u9fa5_-]+(\.[a-zA-Z0-9_-]+)+$')
+    if not re.findall(find_str, sender):
+        set_mail_receivers()
 
     return sender, password
 
