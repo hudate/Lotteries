@@ -14,7 +14,7 @@ from dataB import auto_begin as abg
 from proxy.clear_proxies import clear_proxies_db
 from proxy.get_proxy import GetProxies
 from tools.send_mail import SendMail
-from tools.auto_analyse_data import AnalyseData
+from tools.analyse_one_stage_data import AnalyseData
 from tools.common import *
 from tools.auto_check_articles_list import CheckArticlesList as CAL
 from tools.logger import Logger

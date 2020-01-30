@@ -1,6 +1,5 @@
 import json
 import os
-from threading import Thread
 import time
 
 from dataP.get_now_stage_experts_predict_data import GetNowStagePredictUrl
@@ -287,7 +286,8 @@ class AnalyseData(object):
                                                  self.back_predict_balls_count,
                                                  self.back_kill_balls_count)
 
-        counts, money = cspd.compute_price(predict_data)
+        counts = cspd.compute_price(predict_data)
+        money = 2 * counts
 
         all_data = {
             "lottery": self.lottery_name,

@@ -1,7 +1,5 @@
 
 from settings import LOTTERY_BALLS_COUNT
-import sys
-
 from tools.logger import Logger
 logger = Logger(__name__).logger
 
@@ -30,7 +28,7 @@ class ComposePredictData(object):
 
     def compose_predict_data(self, predict_data, front_predict_count,
                              front_kill_count, back_predict_count, back_kill_count):
-        compose_data = []
+        compose_data = list()
         compose_data.append(self.compose_area_data(predict_data[0], predict_data[2],
                                                    front_predict_count, front_kill_count))
         compose_data.append(self.compose_area_data(predict_data[1], predict_data[3],
@@ -43,5 +41,4 @@ class ComposePredictData(object):
         front_counts = self.cni(len(predict_data[0]), front_balls)
         back_counts = self.cni(len(predict_data[1]), back_balls)
         total_count = front_counts * back_counts
-        total_money = 2 * total_count
-        return total_count, total_money
+        return total_count
