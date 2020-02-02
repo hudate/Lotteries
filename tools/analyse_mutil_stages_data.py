@@ -29,14 +29,15 @@ class MutilStagesAnalyseData(object):
         self.right_ratio_db = lpdb[lottery + '_right_ratio']
         self.right_location_db = lpdb[lottery + '_right_location']
         self.expert_db = lpdb['all_experts']
-        self.front_predict_expert_count = None
-        self.front_kill_expert_count = None
-        self.back_predict_expert_count = None
-        self.back_kill_expert_count = None
-        self.front_predict_balls_count = None
-        self.front_kill_balls_count = None
-        self.back_predict_balls_count = None
-        self.back_kill_balls_count = None
+        self.stage_count_list = None
+        self.front_predict_expert_count_list = None
+        self.front_kill_expert_count_list = None
+        self.back_predict_expert_count_list = None
+        self.back_kill_expert_count_list = None
+        self.front_predict_balls_count_list = None
+        self.front_kill_balls_count_list = None
+        self.back_predict_balls_count_list = None
+        self.back_kill_balls_count_list = None
         self.lottery_name = LOTTERY_DICT_2[lottery]
         self.data_file = data_file
         self.setup_file = SETUP_FILE
@@ -45,15 +46,15 @@ class MutilStagesAnalyseData(object):
     def get_experts_balls_count(self):
         with open(self.setup_file) as f:
             content = json.load(f)
-        self.stage_count = content[self.lottery]['analyse_stages_count']
-        self.front_predict_expert_count = content[self.lottery]['front_predict_expert_count']
-        self.front_kill_expert_count = content[self.lottery]['front_kill_expert_count']
-        self.back_predict_expert_count = content[self.lottery]['back_predict_expert_count']
-        self.back_kill_expert_count = content[self.lottery]['back_kill_expert_count']
-        self.front_predict_balls_count = content[self.lottery]['front_predict_balls_count']
-        self.front_kill_balls_count = content[self.lottery]['front_kill_balls_count']
-        self.back_predict_balls_count = content[self.lottery]['back_predict_balls_count']
-        self.back_kill_balls_count = content[self.lottery]['back_kill_balls_count']
+        self.stage_count_list = content[self.lottery + '_group']['analyse_stages_count']
+        self.front_predict_expert_count_list = content[self.lottery + '_group']['front_predict_expert_count']
+        self.front_kill_expert_count_list = content[self.lottery + '_group']['front_kill_expert_count']
+        self.back_predict_expert_count_list = content[self.lottery + '_group']['back_predict_expert_count']
+        self.back_kill_expert_count_list = content[self.lottery + '_group']['back_kill_expert_count']
+        self.front_predict_balls_count_list = content[self.lottery + '_group']['front_predict_balls_count']
+        self.front_kill_balls_count_list = content[self.lottery + '_group']['front_kill_balls_count']
+        self.back_predict_balls_count_list = content[self.lottery + '_group']['back_predict_balls_count']
+        self.back_kill_balls_count_list = content[self.lottery + '_group']['back_kill_balls_count']
 
     def get_stage_list(self):
         year = int(time.strftime("%Y"))
@@ -127,8 +128,7 @@ class MutilStagesAnalyseData(object):
 
     def analyse_right_info(self):
         for dt_type in DATA_TYPE:
-            for stage in self.stage_list:
-                # 取出某一期的所有专家的预测数据（不包括杀球数据）
+            for stage in self.stage_list:   # 逐期分析正确率
                 find_dict = {'stage': stage}
                 filter_dict = {'_id': 0}
                 predict_find_dict = {'stage': '20'+stage, 'data_type': dt_type}
@@ -141,10 +141,12 @@ class MutilStagesAnalyseData(object):
                     self.analyse_some_stage_data(data, lottery_data)
 
     def get_experts(self, data_type):
-        find_dict = {'data_type': data_type, 'stage': self.now_stage, 'lottery': self.lottery_name}
-        filter_dict = {'_id': 0, 'expert_name': 0, 'lottery': 0}
+        find_dict = {'data_type': data_type, 'stage': self.now_stage, 'lottery': self.lottery_name,
+                     'articles_count': {"$gt": self.stage_count}}
+        filter_dict = {'_id': 0, 'expert_name': 0, 'lottery': 0, }
         experts_dict_list = list(self.expert_db.find(find_dict, filter_dict))
         self.experts_list = [expert_dict['expert_id'] for expert_dict in experts_dict_list]
+        logger.info(self.experts_list)
 
     def compute_mean_and_std(self, expert_id, data_type):
         find_dict = {'expert_id': expert_id, 'data_type': data_type}
@@ -217,41 +219,48 @@ class MutilStagesAnalyseData(object):
                     predict_dict[ball] = predict_dict[ball] + 1
                 else:
                     predict_dict[ball] = 1
-        os.system('rm -f %s' % file)
+        os.remove(file)
         return predict_dict
 
     def predict_kill_experts_list(self):
         # 前区
-        front_pre_experts_list = self.expert_rank(data_type=0)[:self.front_predict_expert_count]
-        logger.info('stage: %s\tred predict balls expert count: %s expert list: %s'
-              % (self.now_stage, len(front_pre_experts_list),  front_pre_experts_list))
+        for front_predict_expert_count in self.front_predict_expert_count_list:
+            print('front_predict_expert_count:', front_predict_expert_count)
+            try:
+                front_pre_experts_list = self.expert_rank(data_type=0)[:front_predict_expert_count]
+                logger.info('stage: %s\t red predict balls expert count: %s expert list: %s'
+                            % (self.now_stage, len(front_pre_experts_list), front_pre_experts_list))
+            except Exception as e:
+                logger.error(e)
 
-        # TODO 需要实现获取数据的功能， 下同
+        for front_kill_expert_count in self.front_kill_expert_count_list:
+            print(front_kill_expert_count)
+            try:
+                front_kill_experts_list = self.expert_rank(data_type=2)[:front_kill_expert_count]
+                logger.info('stage: %s\t red kill balls experts count:%s expert list:%s'
+                            % (self.now_stage, len(front_kill_experts_list), front_kill_experts_list))
+            except Exception as e:
+                logger.error(e)
 
-        front_kill_experts_list = self.expert_rank(data_type=2)[:self.front_kill_expert_count]
-        logger.info('stage: %s red kill balls experts count:%s expert list:%s'
-              % (self.now_stage, len(front_kill_experts_list), front_kill_experts_list))
 
         # 后区
-        back_pre_experts_list = self.expert_rank(data_type=1)[:self.back_predict_expert_count]
-        logger.info('stage: %s blue balls experts count:%s expert list:%s'
-              % (self.now_stage, len(back_pre_experts_list), back_pre_experts_list))
+        for back_predict_expert_count in self.back_predict_expert_count_list:
+            print(back_predict_expert_count)
+            try:
+                back_pre_experts_list = self.expert_rank(data_type=1)[:back_predict_expert_count]
+                logger.info('stage: %s\t blue balls experts count:%s expert list:%s'
+                            % (self.now_stage, len(back_pre_experts_list), back_pre_experts_list))
+            except Exception as e:
+                logger.error(e)
 
-        back_kill_experts_list = self.expert_rank(data_type=3)[:self.back_kill_expert_count]
-        logger.info('stage: %s blue kill balls experts count:%s expert list:%s'
-              % (self.now_stage, len(back_kill_experts_list), back_kill_experts_list))
-
-        all_data = {
-            "lottery": self.lottery_name,
-            "stage": self.now_stage[2:],
-            "front_predict_experts_list": front_pre_experts_list,
-            "front_kill_experts_list": front_kill_experts_list,
-            "back_predict_experts_list": back_pre_experts_list,
-            "back_kill_experts_list": back_kill_experts_list
-        }
-
-        with open(self.data_file, 'w') as f:
-            json.dump(all_data, f)
+        for back_kill_expert_count in self.back_kill_expert_count_list:
+            print(back_kill_expert_count)
+            try:
+                back_kill_experts_list = self.expert_rank(data_type=3)[:back_kill_expert_count]
+                logger.info('stage: %s\t blue kill balls experts count:%s expert list:%s'
+                            % (self.now_stage, len(back_kill_experts_list), back_kill_experts_list))
+            except Exception as e:
+                logger.error(e)
 
     def get_the_next_experts_predict_kill_data(self):
         predict_data = []
@@ -273,7 +282,7 @@ class MutilStagesAnalyseData(object):
 
             gnspu = GetNowStagePredictUrl(self.lottery, experts_list, self.now_stage, data_type, data_file)
             gnspu.run()
-            predict_data.append(self.get_predict_data_from_file(data_file, self.front_predict_expert_count))
+            predict_data.append(self.get_predict_data_from_file(data_file, front_predict_expert_count))
 
         # # predict_data里边有四个列表（如果是七乐彩，就只有前两个），分别是前区预测，前区杀球预测，后区预测，后区杀球预测
         # assert (len(predict_data) == 2 * 2), '彩票名称：%s\t期望列表长度：%s\t实际列表长度：%s' % (
@@ -282,10 +291,10 @@ class MutilStagesAnalyseData(object):
         # 进行每种配置正确率的判断
         cspd = CSPD(self.lottery)
         predict_data = cspd.compose_predict_data(predict_data,
-                                                 self.front_predict_balls_count,
-                                                 self.front_kill_balls_count,
-                                                 self.back_predict_balls_count,
-                                                 self.back_kill_balls_count)
+                                                 front_predict_balls_count,
+                                                 front_kill_balls_count,
+                                                 back_predict_balls_count,
+                                                 back_kill_balls_count)
 
         counts = cspd.compute_price(predict_data)
         money = 2 * counts
@@ -322,9 +331,12 @@ class MutilStagesAnalyseData(object):
 
     def start_analyse(self):
         self.get_experts_balls_count()
-        self.get_stage_list()
-        self.analyse_right_info()       # 分析正确率和正确位置
-        self.predict_kill_experts_list()
+        for stage_count in self.stage_count_list:
+            print('stage_count', stage_count)
+            self.stage_count = stage_count
+            self.get_stage_list()
+            self.analyse_right_info()  # 分析正确率和正确位置
+            self.predict_kill_experts_list()
 
 
 if __name__ == '__main__':

@@ -141,20 +141,23 @@ class GetExpertsUrls(Thread):
         # 当专家的总的文章数量少于排名的期数时，把该专家从专家表中删除，并且写入文件中，下次获取时，不在获取该专家的数据
         logger.debug(total_articles_count, STAGE_COUNT)
 
-        if total_articles_count < STAGE_COUNT:
-            find_dict = {'expert_id': self.expert_id, 'stage': get_the_next_stage(LOTTERY_DICT[self.lottery_name]),
-                         'data_type': self.data_type, 'lottery': self.lottery_name}
-            found_data = self.expert_db.find_one(find_dict, {'_id': 0})
-            self.articles_list_miss_urls_db.delete_many({'expert_id': self.expert_id})
+        # 取消在此处对于专家预测文章数量的检查，而将此检查移至分析数据时从数据库获取专家，依据此判断取出专家
+        # if total_articles_count < STAGE_COUNT:
+        #     find_dict = {'expert_id': self.expert_id, 'stage': get_the_next_stage(LOTTERY_DICT[self.lottery_name]),
+        #                  'data_type': self.data_type, 'lottery': self.lottery_name}
+        #     found_data = self.expert_db.find_one(find_dict, {'_id': 0})
+        #     self.articles_list_miss_urls_db.delete_many({'expert_id': self.expert_id})
+        #
+        #     if found_data:
+        #         self.avoid_experts_db.insert_one(found_data)
+        #         found_data.pop('_id')
+        #         self.expert_db.delete_one(found_data)
+        #         self.all_expert_db.delete_one(found_data)
+        # else:
 
-            if found_data:
-                self.avoid_experts_db.insert_one(found_data)
-                found_data.pop('_id')
-                self.expert_db.delete_one(found_data)
-                self.all_expert_db.delete_one(found_data)
-        else:
-            href_data = []
-            stage_data = []
+        if total_articles_count:
+            href_data = list()
+            stage_data = list()
             try:
                 href_data = data['content'].split(r'<a href="')[1:-2]
                 stage_data = data['content'].split('ul>')[1].split(r'期彩币推荐')[:-1]
@@ -162,8 +165,6 @@ class GetExpertsUrls(Thread):
                 self.get_urls_data(times)
 
             if href_data:
-                stages = []
-                urls = []
                 urls = [data.split(r'" target="_blank"')[0] for data in href_data]
                 stages_list = [data[-3:] for data in stage_data]
                 stages = self.handle_stages(stages_list)
@@ -180,12 +181,17 @@ class GetExpertsUrls(Thread):
 
                 sld = SLD()
 
+                all_experts_db = lpdb["all_experts"]
+                all_experts_db.update_one({'lottery': self.lottery_name, 'data_type': self.data_type,
+                                       'expert_id': self.expert_id, 'stage': get_the_next_stage(LOTTERY_DICT[self.lottery_name])},
+                                      {'$set': {'articles_count': total_articles_count}})
+
                 for index in range(len(urls)):
                     url = urls[index]
                     stage = stages[index]
                     url = url if url.startswith('https://www.cjcp.com.cn/') else 'https://www.cjcp.com.cn/' + url
                     data = {'lottery': self.lottery_name, 'data_type': self.data_type,
-                            'expert_id': self.expert_id, 'url': url, 'stage': stage}
+                            'expert_id': self.expert_id, 'url': url}
 
                     # 先查看爬取保存的数据中有没有，如果保存的数据中有，那就不用保存了
                     found_data = None
@@ -214,8 +220,8 @@ class GetExpertsUrls(Thread):
 
                 self.articles_list_miss_urls_db.delete_one(data)
 
-            else:
-                self.get_urls_data(times)
+        else:
+            self.get_urls_data(times)
 
     def get_predict_articles_list(self):
         self.set_lottery_id()

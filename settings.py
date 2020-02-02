@@ -52,12 +52,11 @@ avoid_experts_db = db['avoid_experts']      # 计入某些不符合要求的专�
 AVOID_EXPERTS = []
 
 LOTTERY_DICT = {
-    '双色球': 'ssq', '大乐透': 'dlt', '七星彩': 'qxc', '七乐彩': 'qlc', '排列三': 'pls', '排列五': 'plw', '福彩3D': 'fc3d'
+    '双色球': 'ssq', '大乐透': 'dlt', '七星彩': 'qxc', '七乐彩': 'qlc', '排列三': 'pls', '排列五': 'plw', '福彩3D': 'fc3d',
+    '刮刮乐': 'ggl'
 }
 
-LOTTERY_DICT_2 = {
-    'ssq': '双色球', 'dlt': '大乐透', 'ggl': '刮刮乐'
-}
+LOTTERY_DICT_2 = {v: k for k, v in LOTTERY_DICT.items()}
 # 获取之前的预测数据的期数
 LOT_PRE_STA_COUNT = 100
 
