@@ -1,6 +1,7 @@
 import json
 import os
 from threading import Thread
+from concurrent.futures import ThreadPoolExecutor
 import time
 
 from dataP.get_now_stage_experts_predict_data import GetNowStagePredictUrl
@@ -141,8 +142,8 @@ class MutilStagesAnalyseData(object):
                     self.analyse_some_stage_data(data, lottery_data)
 
     def get_experts(self, data_type):
-        find_dict = {'data_type': data_type, 'stage': self.now_stage, 'lottery': self.lottery_name,
-                     'articles_count': {"$gt": self.stage_count}}
+        find_dict = {'data_type': data_type, 'stage': self.now_stage, 'lottery': self.lottery_name}
+                     # 'articles_count': {"$gt": self.stage_count}}
         filter_dict = {'_id': 0, 'expert_name': 0, 'lottery': 0, }
         experts_dict_list = list(self.expert_db.find(find_dict, filter_dict))
         self.experts_list = [expert_dict['expert_id'] for expert_dict in experts_dict_list]
@@ -195,14 +196,15 @@ class MutilStagesAnalyseData(object):
         mean_list = []
         std_list = []
         self.get_experts(data_type)
-        for expert in self.experts_list:
-            # 第一步计算均值， 方差， 按照均值第一，方差第二的原则进行排序
-            expert_mean, expert_std = self.compute_mean_and_std(expert_id=expert, data_type=data_type)
-            mean_list.append(expert_mean)
-            std_list.append(expert_std)
-
-        if mean_list and std_list:
+        if len(self.experts_list):
+            for expert in self.experts_list:
+                # 计算均值， 方差， 按照均值第一，方差第二的原则进行排序
+                expert_mean, expert_std = self.compute_mean_and_std(expert_id=expert, data_type=data_type)
+                mean_list.append(expert_mean)
+                std_list.append(expert_std)
             return self.expert_sort(mean_list, std_list)
+        else:
+            logger.error('self.experts_list为空，不能计算均值和方差！！！')
 
     def get_predict_data_from_file(self, file, expert_count):
         predict_dict = {}
@@ -241,7 +243,6 @@ class MutilStagesAnalyseData(object):
                             % (self.now_stage, len(front_kill_experts_list), front_kill_experts_list))
             except Exception as e:
                 logger.error(e)
-
 
         # 后区
         for back_predict_expert_count in self.back_predict_expert_count_list:
@@ -330,13 +331,15 @@ class MutilStagesAnalyseData(object):
         self.right_location_db.drop()
 
     def start_analyse(self):
+        p = ThreadPoolExecutor()
         self.get_experts_balls_count()
         for stage_count in self.stage_count_list:
             print('stage_count', stage_count)
             self.stage_count = stage_count
             self.get_stage_list()
-            self.analyse_right_info()  # 分析正确率和正确位置
+            p.submit(self.analyse_right_info)  # 分析正确率和正确位置
             self.predict_kill_experts_list()
+        p.shutdown()
 
 
 if __name__ == '__main__':

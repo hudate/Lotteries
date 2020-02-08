@@ -1,3 +1,4 @@
+import json
 import os
 import time
 
@@ -7,6 +8,8 @@ from selenium.webdriver import ActionChains
 from settings import lotteries_predict_data_db as lpdb
 from settings import EXPERT_URL as EU
 from selenium import webdriver
+from settings import SETUP_FILE
+from tools.common import get_json_content
 from tools.logger import Logger
 logger = Logger(__name__).logger
 
@@ -15,7 +18,7 @@ logger = Logger(__name__).logger
 
 class GetNowStagePredictData(object):
 
-    def __init__(self, lottery, url, expert_id, data_type, data_file, cookies=None):
+    def __init__(self, lottery, url, expert_id, data_type, data_file):
         self.password = None
         self.account = None
         self.expert = None
@@ -23,25 +26,62 @@ class GetNowStagePredictData(object):
         self.lottery_id = None
         self.wb = None
         self.url = url
+        self.login_url = 'https://www.cjcp.com.cn/member/login.php'
         self.expert_id = expert_id
-        self.cookies = cookies
+        self.cookies = dict()
         self.predict_db = lpdb[lottery]
         self.kill_ball_db = lpdb[lottery + '_kill']
         self.data_type = data_type
         self.data_file = data_file
+        self.cookies_file = 'cookies_file'
 
-    def use_password(self, user, pwd):
+    def clear_cookies(self):
+        self.wb.delete_all_cookies()
+        os.remove(self.cookies_file)
+
+    def write_cookies(self):
+        with open(self.cookies_file, 'w', encoding='utf-8') as f:
+            json.dump(self.cookies, f)
+
+    def read_cookies(self):
+        with open(self.cookies_file, 'r', encoding='utf-8') as f:
+            self.cookies = json.load(f)
+
+    def get_user_pwd(self):
+        cjw_options = get_json_content(SETUP_FILE)['cjw_options']
+        self.account = cjw_options['account']
+        self.password = cjw_options['password']
+
+    def login_with_password(self):
+        self.get_user_pwd()
         time.sleep(2)
-        self.wb.find_element_by_xpath('//*[@id="comm_username"]').send_keys(user)
-        self.wb.find_element_by_xpath('//*[@id="comm_pwd"]').send_keys(pwd)
+        self.wb.find_element_by_xpath('//*[@id="comm_username"]').send_keys(self.account)
+        self.wb.find_element_by_xpath('//*[@id="comm_pwd"]').send_keys(self.password)
         try:
             self.wb.find_element_by_xpath('//*[@id="comm_login"]').click()
-            self.cookies = self.wb.get_cookies()
+            time.sleep(3)
             return True
-        except:
+        except Exception as e:
+            logger.error(e)
             return False
 
-    def use_message_code(self, account):
+    def set_cookies(self):
+        while 1:
+            if os.path.exists(self.cookies_file):
+                logger.info('不需要登陆！')
+                # self.wb.get(self.url)       # 在给浏览器添加
+                self.read_cookies()
+                return
+            else:
+                logger.info('需要登陆！')
+                if self.login():
+                    self.cookies = self.wb.get_cookies()
+                    self.write_cookies()
+                    return
+                else:
+                    logger.error('未能成功登录！')
+
+    def login_with_message(self, account):
         self.wb.find_element_by_xpath('//*[@id="login_1"]').click()
         self.wb.find_element_by_xpath('//*[@id="mobile"]').send_keys(account)
         time.sleep(0.5)
@@ -113,16 +153,8 @@ class GetNowStagePredictData(object):
         print(self.cookies)
 
     def login(self):
-        self.wb.find_element_by_xpath('/html/body/div[2]/div/div[1]/ul/li[1]/a').click()
-        if not self.use_password(self.account, self.password):
-            if self.use_message_code(self.account):
-                return True
-            else:
-                pass
-                # TODO 当登录不成功时，该怎么做？
-        else:
-            return True
-
+        self.wb.get(self.login_url)
+        return self.login_with_password()
 
     def parse_data(self, data):
         pass
@@ -132,19 +164,23 @@ class GetNowStagePredictData(object):
         profile_dir = '/home/hdate/Softwares/Firefox'
         profile = webdriver.FirefoxProfile(profile_dir)
         self.wb = webdriver.Firefox()
-        # self
 
     def get_data(self):
         self.set_browser()
-        obj = self.wb.get(self.url)
-        while self.cookies is None:
-            self.login()
 
+        self.set_cookies()
+        for cookie in self.cookies:
+            self.wb.add_cookie({k: v for k, v in cookie.items()})
+        self.wb.get(self.url)
         time.sleep(10)
-
-        self.wb.find_element_by_xpath('/html/body/div[14]/div[1]/div[1]/div/div[3]/div/div[3]/input').click()
-        self.wb.find_element_by_xpath('//*[@id="wzcbar"]').click()
-        # TODO 解决从firefox中拿出页面内容，并进行解析数据，存入数据库
+        try:
+            self.wb.find_element_by_xpath('/html/body/div[14]/div[1]/div[1]/div/div[3]/div/div[3]/input').click()
+            self.wb.find_element_by_xpath('//*[@id="wzcbar"]').click()
+        except Exception as e:
+            logger.error(e)
+            self.clear_cookies()
+            self.wb.close()
+            # TODO 解决从firefox中拿出页面内容，并进行解析数据，存入数据库
 
         # 处理登录
         # 处理在新的tab中打开页面

@@ -53,7 +53,7 @@ class GetNowStagePredictUrl(object):
             url = urls[stage_index] if urls[stage_index].startswith('https://www.cjcp.com.cn/') else 'https://www.cjcp.com.cn/' + urls[stage_index]
 
         if url:
-            if REAL == 1:
+            if REAL:
                 # todo 获取cookies
                 gpd = GNSPD_WB(self.lottery, url, expert_id, self.data_type, self.data_file)
                 gpd.run()
