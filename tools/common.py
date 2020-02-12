@@ -1,6 +1,8 @@
 import json
 import os
 import time
+import re
+
 from settings import lotteries_predict_data_db as lpdb, MAX_EXPERTS_PAGE_COUNT, lotteries_data_db as ldb
 
 
@@ -79,17 +81,9 @@ def remove_browser_tmp(tmp_dir):
 def set_mail_sender():
     sender = input('请输入发件人：')
     password = input('请输入对应密码：')
-    if sender.strip() == '' or password.strip() == '':
-        print('error:\t发件人或者密码不能为空！')
-        set_mail_sender()
-
-    if '@' not in sender:
-        print('error:\t发件人格式有误，"@"不在发件人中！！！')
-        set_mail_sender()
-
-    if sender.startswith('@') or sender.endswith('@'):
-        print('error:\t发件人格式有误，发件人以"@"开头或者结尾！！！')
-        set_mail_sender()
+    find_str = re.compile(r'^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9\u4e00-\u9fa5_-]+(\.[a-zA-Z0-9_-]+)+$')
+    if not re.findall(find_str, sender):
+        set_mail_receivers()
 
     return sender, password
 
@@ -103,13 +97,10 @@ def set_mail_receivers():
     else:
         receivers = _receivers.strip('[').strip(']').strip(',').split(',')
         receivers = [receiver.strip('"') for receiver in receivers]
-    for receiver in receivers:
-        if '@' not in receiver:
-            print('error:\t"@"不在某一个收件人中！！！')
-            set_mail_receivers()
 
-        if receiver.startswith('@') or receiver.endswith('@'):
-            print('error:\t某个收件人以"@"开头或者结尾！！！')
+    for receiver in receivers:
+        find_str = re.compile(r'^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9\u4e00-\u9fa5_-]+(\.[a-zA-Z0-9_-]+)+$')
+        if not re.findall(find_str, receiver):
             set_mail_receivers()
 
     return list(set(receivers))

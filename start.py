@@ -269,8 +269,8 @@ def other_test():
 
 if __name__ == '__main__':
     if not os.path.exists(SETUP_FILE):
-        if os.name == "nt":
-            os.system('copy %s %s' % (SETUP_TEMPLATE, SETUP_FILE))
+        if os.name == 'nt':
+            os.system('xcopy %s %s' % (SETUP_TEMPLATE, SETUP_FILE))
         else:
             os.system('cp -f %s %s' % (SETUP_TEMPLATE, SETUP_FILE))
 
