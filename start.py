@@ -1,3 +1,6 @@
+# -*- coding:utf-8 -*-
+import shutil
+
 import gevent
 from gevent import monkey
 monkey.patch_all()
@@ -244,11 +247,10 @@ def first_run(data):
         bag.begin()
 
     mail_sender, mail_password = set_mail_sender()
-    mail_receivers = set_mail_receivers()
     cjw_account, cjw_password = set_cjw_account()
     data['mail_options']['sender'] = mail_sender
     data['mail_options']['password'] = mail_password
-    data['mail_options']['receivers'] = mail_receivers
+    data['mail_options']['receivers'] = set_mail_receivers()
     data['cjw_options']['account'] = cjw_account
     data['cjw_options']['password'] = cjw_password
     data['run_times'] = 1
@@ -267,10 +269,7 @@ def other_test():
 
 if __name__ == '__main__':
     if not os.path.exists(SETUP_FILE):
-        if os.name == 'nt':
-            os.system('xcopy %s %s' % (SETUP_TEMPLATE, SETUP_FILE))
-        else:
-            os.system('cp -f %s %s' % (SETUP_TEMPLATE, SETUP_FILE))
+        shutil.copyfile(SETUP_TEMPLATE, SETUP_FILE)
 
     with open(SETUP_FILE, 'r', encoding='utf-8') as f:
         content = json.load(f)
