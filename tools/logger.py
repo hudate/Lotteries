@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 import logging
 import os
 from logging.handlers import RotatingFileHandler
@@ -31,7 +33,7 @@ class Logger(object):
         formatter = logging.Formatter('[%(asctime)s] [%(pathname)s:%(lineno)d] - %(levelname)s: %(message)s')
 
         # 设置日志文件及回滚
-        frHandler = RotatingFileHandler(LOG_FILE, maxBytes=20 * 1024 * 1024, backupCount=30)
+        frHandler = RotatingFileHandler(LOG_FILE, maxBytes=20 * 1024 * 1024, backupCount=30, encoding='utf-8')
         frHandler.setLevel(self.levels[level])
         frHandler.setFormatter(formatter)
 
