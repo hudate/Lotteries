@@ -9,7 +9,7 @@ from settings import EXPERT_URL as EU
 from dataP.get_now_stage_expert_predict_data_with_browser import GetNowStagePredictData as GNSPD_WB
 from dataP.get_now_stage_expert_predict_data_without_browser import GetNowStagePredictData as GNSPD_WOB
 
-REAL = 1
+# REAL = 1
 
 # TODO 不使用浏览器去获取预测数据
 from tools.ua import ua

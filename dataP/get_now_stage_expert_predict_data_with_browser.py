@@ -167,8 +167,8 @@ class GetNowStagePredictData(object):
 
     def get_data(self):
         self.set_browser()
-
         self.set_cookies()
+        logger.info(self.cookies)
         for cookie in self.cookies:
             self.wb.add_cookie({k: v for k, v in cookie.items()})
         self.wb.get(self.url)
