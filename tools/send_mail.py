@@ -145,7 +145,3 @@ class SendMail(object):
 if __name__ == '__main__':
     sm = SendMail('test_data_1.json')
     sm.send_test_mail()
-
-
-
-
