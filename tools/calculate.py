@@ -37,22 +37,22 @@ ssq_level_dict = {
 
 class Calculate(object):
 
-    def __init__(self, lottery, fore_count, back_count, fore_right_count, back_right_count):
+    def __init__(self, lottery):
         self.lottery = lottery
-        self.fore_count = fore_count
-        self.back_count = back_count
-        self.fore_right_count = fore_right_count
-        self.back_right_count = back_right_count
         self.lottery_dict = dlt_dict if lottery == 'dlt' else ssq_dict
         self.level_dict = dlt_level_dict if lottery == 'dlt' else ssq_level_dict
         self.detail = {}
+        self.fore_count = 0
+        self.back_count = 0
+        self.fore_right_count = 0
+        self.back_right_count = 0
         self.add_expenditure = 0
         self.price = 0
         self.money = 0
         self.count = 0
-        self.income = 0
-        self.profit = 0
-        self.profit_rate = 0
+        self.income = {'固定收入': 0, '浮动收入': 0}
+        self.profit = {'固定收益': 0, '浮动收益': 0}
+        self.profit_rate = {'固定收益率': 0, '浮动收入': 0}
 
     # 计算额外话费
     def calculate_add_expenditure(self):
@@ -71,23 +71,24 @@ class Calculate(object):
 
     def calculate_income(self):
         for k, v in self.detail.items():
-            logger.info('等级：%s 单价：%s 注数%s 奖金：%s' % (self.level_dict[k], k, v, k * v))
-
+            logger.info('等级：%s \t\t单价：%s \t\t注数：%s \t\t奖金：%s' % (self.level_dict[k], k, v, v * k if v != 0 else 0))
             if isinstance(k, int):
-                self.income += k * v
+                self.income['固定收入'] += k * v
+            elif v == 0:
+                self.income['浮动收入'] += 0
             else:
                 try:
-                    self.income += self.income + '%s * %s' % (v, k)
+                    self.income['浮动收入'] += '+' + '%s%s' % (v, k)
                 except:
-                    self.income += str(self.income) + '%s * %s' % (v, k)
+                    self.income['浮动收入'] = '%s%s' % (v, k)
         logger.info('共计奖金：%s' % self.income)
         return
 
     # 计算组合数
-    def __cni(self, n, i):
+    def __cni(self, i, n):
         result = 1
-        for j in range(1, i + 1):
-            result = result * (n - i + j) // j
+        for j in range(1, n + 1):
+            result = result * (i - n + j) // j
         return result
 
     # 计算总注数
@@ -106,28 +107,49 @@ class Calculate(object):
             logger.error('Please use compute_count() first!!!')
         return
 
-    # 计算详情
-    def calculate_detail(self):
-        for i in range(self.fore_right_count + 1):
-            for j in range(self.back_right_count + 1):
-                for k, v in self.lottery_dict.items():
-                    if [i, j] == v or [i, j] in v:
-                        # print('中奖：', [i, j])
-                        # print(LOTTERY_BALLS_COUNT[self.lottery][0], i)
-                        # print(self.__cni(LOTTERY_BALLS_COUNT[self.lottery][0], i))
-                        # print(LOTTERY_BALLS_COUNT[self.lottery][1], j)
-                        # print(self.__cni(LOTTERY_BALLS_COUNT[self.lottery][1], j))
-                        self.detail[k] = (self.__cni(LOTTERY_BALLS_COUNT[self.lottery][0], i) *
-                                          self.__cni(LOTTERY_BALLS_COUNT[self.lottery][1], j)) \
-                            if k not in self.detail else (self.detail[k] +
-                                                          self.__cni(LOTTERY_BALLS_COUNT[self.lottery][0], i) *
-                                                          self.__cni(LOTTERY_BALLS_COUNT[self.lottery][1], j))
-        # print(self.detail)
-        return
-
     # 计算收益率
     def calculate_profit_rate(self):
-        self.profit_rate = (self.income - self.money) / self.money
+        logger.warning('本次只计算固定收益率')
+        self.profit_rate = '%.2f' % ((self.income['固定收入'] - self.money) / self.money * 100) + '%'
+        logger.info('投入：%s 固定收益：%s 固定收益率：%s 浮动收益：%s' % (self.money, self.income['固定收入'] - self.money,
+                                                            self.profit_rate,  self.income['浮动收入']))
+        return
+
+    def set_balls_count(self, freq, breq, fhit, bhit):
+        self.fore_count = freq
+        self.back_count = breq
+        self.fore_right_count = fhit
+        self.back_right_count = bhit
+
+    # 计算前区或后区命中指定个数的方案注数
+    def solve_hits(self, num, req, opt, req_hit, opt_hit):
+        opt_left = num - req
+        opt_miss = opt - opt_hit
+        most = req_hit + opt_hit
+        hits = [0 for i in range(num + 1)]
+        for i in range(num + 1):
+            if (i < req_hit) or (i > most):
+                hits[i] = 0
+            else:
+                opt_need = i - req_hit
+                hits[i] = self.__cni(opt_hit, opt_need) * self.__cni(opt_miss, opt_left - opt_need)
+        return hits
+
+    # 计算各奖项命中的方案注数
+    def calculate_detail(self):
+        # fHits: 前区命中个数， bHits: 后区命中个数
+        fReq = 0
+        fReqHit = 0
+        bReq = 0
+        bReqHit = 0
+        fHits = self.solve_hits(LOTTERY_BALLS_COUNT[self.lottery][0], fReq, self.fore_count, fReqHit, self.fore_right_count)
+        bHits = self.solve_hits(LOTTERY_BALLS_COUNT[self.lottery][1], bReq, self.back_count, bReqHit, self.back_right_count)
+        for k, v in self.lottery_dict.items():
+            self.detail[k] = 0
+            for i in range(len(fHits)):
+                for j in range(len(bHits)):
+                    if [i, j] == self.lottery_dict[k] or [i, j] in self.lottery_dict[k]:
+                        self.detail[k] += fHits[i] * bHits[j]
         return
 
     def calculate(self):
@@ -138,9 +160,13 @@ class Calculate(object):
         self.calculate_detail()
         self.calculate_income()
         self.calculate_right_ratio()
+        self.calculate_profit_rate()
 
 
 if __name__ == '__main__':
-    calc = Calculate('dlt', fore_count=7, back_count=4, fore_right_count=3, back_right_count=2)
+    calc = Calculate('dlt')
+    calc.set_balls_count(freq=7, breq=4, fhit=3, bhit=2)
+    # calc.set_fore_req(fore_req, fore_opt, fore_req_hit, fore_opt_hit)
+    # calc.set_back_req(back_req, back_opt, back_req_hit, back_opt_hit)
     calc.calculate()
     # print(calc.count, calc.price, calc.add_expenditure, calc.money)

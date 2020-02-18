@@ -183,14 +183,14 @@
 		btnCalculate = $("#btn_calculate"),
 		inputs = table.find("input.jsq_text"),
 		winnings = $("#result_winnings"),
-		fReq = 0,
-		fOpt = 0,
-		bReq = 0,
-		bOpt = 0,
-		fReqHit = 0,
-		fOptHit = 0,
-		bReqHit = 0,
-		bOptHit = 0;
+		fReq = 0,       // 前胆
+		fOpt = 0,       // 前拖
+		bReq = 0,       // 后胆
+		bOpt = 0,       // 后拖
+		fReqHit = 0,    // 前胆中
+		fOptHit = 0,    // 前拖中
+		bReqHit = 0,    // 后胆中
+		bOptHit = 0;    // 后拖中
 
 	// 设置胆拖切换
 	function setCheck() {
@@ -202,10 +202,10 @@
 
 	// 计算投注数
 	function bet(error) {
-		fReq = 0;
-		fOpt = 0;
-		bReq = 0;
-		bOpt = 0;
+		fReq = 0,       // 前胆
+		fOpt = 0,       // 前拖
+		bReq = 0,       // 后胆
+		bOpt = 0,       // 后拖
 		if (checkedFR) {
 			fReq = + spForeRequired.find("input").val();
 			fOpt = + spForeOptional.find("input").val();
@@ -257,10 +257,10 @@
 		if (! bet(true)) {
 			return;
 		}
-		fReqHit = 0;
-		fOptHit = 0;
-		bReqHit = 0;
-		bOptHit = 0;
+        fReqHit = 0,    // 前胆中
+		fOptHit = 0,    // 前拖中
+		bReqHit = 0,    // 后胆中
+		bOptHit = 0;    // 后拖中
 		if (checkedFR) {
 			fReqHit = + hitForeRequired.find("input").val();
 			fOptHit = + hitForeOptional.find("input").val();
@@ -311,6 +311,8 @@
 
 	// 计算各奖项命中的方案注数
 	function win() {
+//	    fHits: 前区命中个数， bHits: 后区命中个数
+//	    fNum: 前区开奖个数， bNum: 后区开奖个数
 		var fHits = solveHits(fNum, fReq, fOpt, fReqHit, fOptHit),
 			bHits = solveHits(bNum, bReq, bOpt, bReqHit, bOptHit),
 			result = [];

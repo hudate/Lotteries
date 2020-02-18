@@ -10,7 +10,7 @@ db = pym_client['Lotteries']
 lotteries_data_db = {
     'ssq': db['lottery_ssq'],
     'qlc': db['lottery_qlc'],
-    'fc3d': db['lottery_fc3d'],
+    'fcd': db['lottery_fcd'],
     'dlt': db['lottery_dlt'],
     'qxc': db['lottery_qxc'],
     'pls': db['lottery_pls'],
@@ -54,7 +54,7 @@ avoid_experts_db = db['avoid_experts']      # 计入某些不符合要求的专�
 AVOID_EXPERTS = []
 
 LOTTERY_DICT = {
-    '双色球': 'ssq', '大乐透': 'dlt', '七星彩': 'qxc', '七乐彩': 'qlc', '排列三': 'pls', '排列五': 'plw', '福彩3D': 'fc3d',
+    '双色球': 'ssq', '大乐透': 'dlt', '七星彩': 'qxc', '七乐彩': 'qlc', '排列三': 'pls', '排列五': 'plw', '福彩3D': 'fcd',
     '刮刮乐': 'ggl'
 }
 
