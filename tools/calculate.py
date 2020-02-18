@@ -120,6 +120,7 @@ class Calculate(object):
         self.back_count = breq
         self.fore_right_count = fhit
         self.back_right_count = bhit
+        return
 
     # 计算前区或后区命中指定个数的方案注数
     def solve_hits(self, num, req, opt, req_hit, opt_hit):
@@ -169,4 +170,3 @@ if __name__ == '__main__':
     # calc.set_fore_req(fore_req, fore_opt, fore_req_hit, fore_opt_hit)
     # calc.set_back_req(back_req, back_opt, back_req_hit, back_opt_hit)
     calc.calculate()
-    # print(calc.count, calc.price, calc.add_expenditure, calc.money)
