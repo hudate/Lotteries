@@ -1,7 +1,6 @@
 from threading import Thread
 from settings import lotteries_data_db as ldb
 from settings import lotteries_predict_data_db as lpdb
-from throw.right_ratio import RightRatio as RR
 from tools.save_data import SaveLotteriesData as SLD
 from tools.logger import Logger
 logger = Logger(__name__).logger
@@ -74,9 +73,7 @@ class AnalysePredictData(Thread):
         now_stage_lottery_data = [lottery_rad_balls, lottery_blue_balls]
 
         # TODO -> 胡少博 实现前N个球的正确率，在right_ratio.py中
-        rr = RR()
-        rr.set(self.lottery_name, 9, 7)
-        rr.show_right_ratio(now_stage_predict_data, now_stage_lottery_data)
+
 
     def analyse_dlt(self):
         rad_keys = [str(i) if i > 9 else '0' + str(i) for i in range(1, 36)]
@@ -102,7 +99,6 @@ class AnalysePredictData(Thread):
                 rad_dict[ball] = rad_dict[ball] + 1
 
             for ball in predict_blue_balls:
-                # TODO -> 胡少博 修正从网站拿到的的预测数据，因为有些专家的预测数据少一行，导致拿到的“后区定六码”数据有问题
                 try:
                     blue_dict[ball] = blue_dict[ball] + 1
                 except Exception as e:

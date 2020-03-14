@@ -1,3 +1,4 @@
+import json
 from settings import LOTTERY_BALLS_COUNT
 from tools.logger import Logger
 
@@ -5,15 +6,14 @@ from tools.logger import Logger
 需要计算的内容：
 1. 总注数
 2. 总价格
-3. 总正确率
-4. 正确详情（一等奖，二等奖，三等奖，四等奖，五等奖，六等奖，七等奖，八等奖，九等奖等各多少注）
-5. 总收益
-6. 收益率
+3. 正确详情（一等奖，二等奖，三等奖，四等奖，五等奖，六等奖，七等奖，八等奖，九等奖等各多少注）
+4. 总收益
+5. 收益率
 '''
 
-ADD_EXPENDITURE = [15, 16, 17, 18, 13, 14, 12, 10]
+ADD_EXPENDITURE = [150, 152, 148, 150]
 
-logger = Logger('calculate.py').logger
+logger = Logger(__name__).logger
 
 dlt_dict = {
     'A': [5, 2], 'B': [5, 1], 10000: [5, 0], 3000: [4, 2], 300: [4, 1], 200: [3, 2],
@@ -37,7 +37,7 @@ ssq_level_dict = {
 
 class Calculate(object):
 
-    def __init__(self, lottery):
+    def __init__(self, lottery, data_file):
         self.lottery = lottery
         self.lottery_dict = dlt_dict if lottery == 'dlt' else ssq_dict
         self.level_dict = dlt_level_dict if lottery == 'dlt' else ssq_level_dict
@@ -53,25 +53,37 @@ class Calculate(object):
         self.income = {'固定收入': 0, '浮动收入': 0}
         self.profit = {'固定收益': 0, '浮动收益': 0}
         self.profit_rate = {'固定收益率': 0, '浮动收入': 0}
+        self.data_file = data_file
+        self.income_str = None
+        self.detail_str = ''
 
     # 计算额外话费
     def calculate_add_expenditure(self):
         # 主要是专家数据支出, 把每个专家的数据钱数相加即可
         self.add_expenditure = sum(ADD_EXPENDITURE)
-        pass
+        return
 
     # 计算总钱数
     def calculate_money(self):
         self.money = self.price + self.add_expenditure
         return
 
-    # 计算总正确率
-    def calculate_right_ratio(self):
-        pass
-
     def calculate_income(self):
         for k, v in self.detail.items():
-            logger.info('等级：%s \t\t单价：%s \t\t注数：%s \t\t奖金：%s' % (self.level_dict[k], k, v, v * k if v != 0 else 0))
+            if v != 0:
+                if isinstance(k, int):
+                    self.detail_str += '等级：%s \t\t单价：%s \t\t注数：%s \t\t奖金：%s\n' % (self.level_dict[k], k, v, v * k)
+                    logger.info('等级：%s \t\t单价：%s \t\t注数：%s \t\t奖金：%s' % (self.level_dict[k], k, v, v * k))
+                else:
+                    # if v == 0:
+                    #     logger.info('等级：%s \t\t单价：%s \t\t注数：%s \t\t奖金：%s' % (self.level_dict[k], k, v, v))
+                    if v == 1:
+                        self.detail_str += '等级：%s \t\t单价：%s \t\t注数：%s \t\t奖金：%s\n' % (self.level_dict[k], k, v, k)
+                        logger.info('等级：%s \t\t单价：%s \t\t注数：%s \t\t奖金：%s' % (self.level_dict[k], k, v, k))
+                    else:
+                        self.detail_str += '等级：%s \t\t单价：%s \t\t注数：%s \t\t奖金：%s%s\n' % (self.level_dict[k], k, v, v, k)
+                        logger.info('等级：%s \t\t单价：%s \t\t注数：%s \t\t奖金：%s%s' % (self.level_dict[k], k, v, v, k))
+
             if isinstance(k, int):
                 self.income['固定收入'] += k * v
             elif v == 0:
@@ -81,7 +93,8 @@ class Calculate(object):
                     self.income['浮动收入'] += '+' + '%s%s' % (v, k)
                 except:
                     self.income['浮动收入'] = '%s%s' % (v, k)
-        logger.info('共计奖金：%s' % self.income)
+        self.income_str = self.income['固定收入'] if self.income['浮动收入'] == 0 else str(self.income['固定收入']) + '+' + self.income['浮动收入']
+        logger.info('共计奖金：%s' % self.income_str)
         return
 
     # 计算组合数
@@ -123,7 +136,7 @@ class Calculate(object):
         return
 
     # 计算前区或后区命中指定个数的方案注数
-    def solve_hits(self, num, req, opt, req_hit, opt_hit):
+    def solve_hits(self, num, req=0, opt=0, req_hit=0, opt_hit=0):
         opt_left = num - req
         opt_miss = opt - opt_hit
         most = req_hit + opt_hit
@@ -139,12 +152,8 @@ class Calculate(object):
     # 计算各奖项命中的方案注数
     def calculate_detail(self):
         # fHits: 前区命中个数， bHits: 后区命中个数
-        fReq = 0
-        fReqHit = 0
-        bReq = 0
-        bReqHit = 0
-        fHits = self.solve_hits(LOTTERY_BALLS_COUNT[self.lottery][0], fReq, self.fore_count, fReqHit, self.fore_right_count)
-        bHits = self.solve_hits(LOTTERY_BALLS_COUNT[self.lottery][1], bReq, self.back_count, bReqHit, self.back_right_count)
+        fHits = self.solve_hits(LOTTERY_BALLS_COUNT[self.lottery][0], opt=self.fore_count, opt_hit=self.fore_right_count)
+        bHits = self.solve_hits(LOTTERY_BALLS_COUNT[self.lottery][1], opt=self.back_count, opt_hit=self.back_right_count)
         for k, v in self.lottery_dict.items():
             self.detail[k] = 0
             for i in range(len(fHits)):
@@ -153,6 +162,14 @@ class Calculate(object):
                         self.detail[k] += fHits[i] * bHits[j]
         return
 
+    def save_result(self):
+        with open(self.data_file, 'a') as f:
+            data = json.load(f)
+            data['income'] = self.income_str
+            data['pride_detail'] = self.detail_str
+            data['money'] = self.money
+
+
     def calculate(self):
         self.calculate_count()
         self.calculate_price()
@@ -160,12 +177,12 @@ class Calculate(object):
         self.calculate_money()
         self.calculate_detail()
         self.calculate_income()
-        self.calculate_right_ratio()
         self.calculate_profit_rate()
+        self.save_result()
 
 
 if __name__ == '__main__':
-    calc = Calculate('dlt')
+    calc = Calculate('dlt', 'test_data_1.json')
     calc.set_balls_count(freq=7, breq=4, fhit=3, bhit=2)
     # calc.set_fore_req(fore_req, fore_opt, fore_req_hit, fore_opt_hit)
     # calc.set_back_req(back_req, back_opt, back_req_hit, back_opt_hit)

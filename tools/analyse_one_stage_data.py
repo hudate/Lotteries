@@ -328,7 +328,7 @@ class AnalyseData(object):
 
 if __name__ == '__main__':
     now_stage = '2020009'
-    # logger.info('%s %s %s' % ('ssq', now_stage, 'test_data_1.json'))
+    logger.info('%s %s %s' % ('ssq', now_stage, 'test_data_1.json'))
     ad = AnalyseData('ssq', now_stage, 'test_data_1.json')
     ad.start_analyse()
     ad.get_the_next_experts_predict_kill_data()

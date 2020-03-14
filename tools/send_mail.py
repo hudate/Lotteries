@@ -43,14 +43,15 @@ class SendMail(object):
         <h3 style="color:#07f"><pre>  第<font color="#f70" face="sans-serif"><u>%s</u></font>期 <font color="#80e" face="sans-serif"><u>%s</u></font>:</pre></h3>
         <h4 style="color:#red;font:{"Arial",12}"><pre>     前区：<font color="#f00" face="sans-serif">%s</font></pre></h4>
         <h4 style="color:#blue;font:{"Arial",12}"><pre>     后区：<font color="#00f" face="sans-serif">%s</font></pre></h4>
-        <h3 style="color:#07f"><pre>  共：<font color="#f70" face="sans-serif"><u>%s</u></font>注    计：<font color="#f70" face="sans-serif"><u> %s </u></font>元</h3>
+        <h3 style="color:#07f"><pre>  共：<font color="#f70" face="sans-serif"><u>%s</u></font>注（%s+%s）    计：<font color="#f70" face="sans-serif"><u> %s </u></font>元</h3>
         
         <h3 style="color:#07f"><pre>前区预测专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>
         <h3 style="color:#07f"><pre>前区杀球专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>
         <h3 style="color:#07f"><pre>后区预测专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>
         <h3 style="color:#07f"><pre>后区杀球专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>''' \
                   % (self.data['stage'], self.data['lottery'], ', '.join(self.data['front_predict_balls']),
-                     ', '.join(self.data['back_predict_balls']), self.data['lottery_counts'], self.data['lottery_money'],
+                     ', '.join(self.data['back_predict_balls']), self.data['lottery_counts'], len(self.data['front_predict_balls']),
+                     len(self.data['back_predict_balls']), self.data['lottery_money'],
                      ', '.join(self.data['front_predict_balls']),
                      ', '.join(self.data['back_predict_balls']),
                      ', '.join(self.data['front_predict_experts_list']),
