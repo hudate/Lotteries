@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 import shutil
-
 import gevent
 from gevent import monkey
 monkey.patch_all()
