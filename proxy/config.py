@@ -4,9 +4,7 @@
 # monkey.patch_all()
 
 import pymongo
-import pymysql
 import redis
-import ftplib
 
 redis_db = [1, 3, 5, 7, 9]     # ['拉勾', 'Boss', '猎聘', '51job', '智联']
 MR = redis.Redis(host='localhost', port=6379, password='123456')
