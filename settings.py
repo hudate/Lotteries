@@ -122,7 +122,8 @@ DAYS_DICT = {'0': '日', '1': '一', '2': '二', '3': '三', '4': '四', '5': '�
 
 LOTTERY_BALLS_COUNT = {'ssq': [6, 1], 'dlt': [5, 2]}
 
-BASE_DIR = os.path.expanduser('~') + os.sep + 'Lotteries'
+BASE_DIR = os.path.dirname(__file__)
+print(BASE_DIR)
 
 SETUP_FILE = os.sep.join([BASE_DIR, 'setup.json'])
 SETUP_TEMPLATE = os.sep.join([BASE_DIR, 'setup_template.json'])
