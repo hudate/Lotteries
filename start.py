@@ -1,14 +1,12 @@
 # -*- coding:utf-8 -*-
-import shutil
 import gevent
-from gevent import monkey
-monkey.patch_all()
-
+from gevent import monkey; monkey.patch_all()
+import shutil
 import os
-from settings import DAYS_DICT, avoid_experts_db, LOTTERY_DICT_2, DATA_FILE, \
-    miss_urls_db, SETUP_FILE, BASE_DIR, saved_db, REAL, SETUP_TEMPLATE
-
+from settings import DAYS_DICT, avoid_experts_db, LOTTERY_DICT_2, DATA_FILE, miss_urls_db, SETUP_FILE, BASE_DIR, \
+    saved_db, REAL, SETUP_TEMPLATE
 os.chdir(BASE_DIR)
+from dataP.auto_get_missed_predict_data import GetMissedPredictData
 
 import signal
 from multiprocessing import Process
@@ -19,9 +17,8 @@ from tools.send_mail import SendMail
 from tools.analyse_one_stage_data import AnalyseData
 from tools.common import *
 from tools.auto_check_articles_list import CheckArticlesList as CAL
-from tools.logger import Logger
 from dataP.auto_begin import ExpertDataBegin as EB
-
+from tools.logger import Logger
 logger = Logger(logger=__name__).getlog()
 
 process_flag = 0
@@ -217,7 +214,10 @@ def start():
 
         logger.info('今天星期%s，开奖：%s！！！' % (DAYS_DICT[time.strftime('%w')], LOTTERY_DICT_2[lottery]))
 
-        if lottery != 'ggl':
+        if lottery == 'ggl':
+            gmpd = GetMissedPredictData()
+            gmpd.run()
+        else:
             if not process_flag and (start_time[:2] <= time.strftime('%H') and time.strftime('%H:%M') <= end_time):
                 now_stage = get_the_next_stage(lottery)
                 p1 = Process(target=start_ctrl, args=(lottery, now_stage, work_times))
