@@ -32,7 +32,7 @@ class CheckProxies(object):
     def https_check(self, proxy):
         html, proxy_ip = self.get_info(self.https_url, proxy)
         if proxy_ip:
-            ip = html.xpath('//script/text()')[0].split('code')[1][1:-2]
+            ip = html.xpath('//code/text()')[0]
             if ip == proxy_ip:
                 self.save_proxy(proxy)
 
@@ -40,13 +40,13 @@ class CheckProxies(object):
         proxy_ip = list(proxy.values())[0].split(':')[1][2:]
         req = requests.Response()
         try:
-            req = requests.get(url=url, proxies=proxy, timeout=5, verify=False, headers=self.header)
+            req = requests.get(url=url, proxies=proxy, timeout=10, verify=False, headers=self.header)
         except:
             pass
 
         if req.status_code == 200:
             html = etree.HTML(req.text)
-            return (html, proxy_ip)
+            return html, proxy_ip
         else:
             return None, None
 
@@ -69,4 +69,3 @@ class CheckProxies(object):
 #     list_proxy =
 #     cp = CheckProxies()
 #     cp.start(list_proxy)
-

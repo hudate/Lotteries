@@ -9,7 +9,7 @@ import urllib3
 from lxml import etree
 from proxy.check_proxy import CheckProxies
 from tools.ua import ua
-from proxy.settings import *
+from proxy.config import *
 
 urllib3.disable_warnings()
 from tools.logger import Logger

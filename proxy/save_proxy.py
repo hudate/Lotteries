@@ -1,5 +1,5 @@
 import os
-from proxy.settings import mongo_setting, redis_setting
+from proxy.config import mongo_setting, redis_setting
 from tools.logger import Logger
 logger = Logger(__name__).logger
 
@@ -40,4 +40,3 @@ if __name__ == '__main__':
     sp = SaveProxies()
     for proxy in list_proxy:
         sp.save_to_redis(proxy)
-
