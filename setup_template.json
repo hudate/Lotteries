@@ -143,7 +143,7 @@
     "#注释4": {
         "dlt/ssq": "预测参数：用于预测每期的参数",
         "dlt_group/ssq_group": "计算预测参数",
-        "dlt_group_cn/ssq_group_cn": "把英语的key对应到汉字的key，以便发表预测数据。",
+        "dlt_group_cn/ssq_group_cn": "把英语的key对应到汉语的key，以便发表预测数据。",
         "num2cn": "把数字变为网站数据中需要的字"
     }
 }
