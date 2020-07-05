@@ -1,7 +1,6 @@
 import json
 import time
 import requests
-from threading import Thread
 from settings import lotteries_predict_data_db as lpdb, STAGE_COUNT, avoid_experts_db, PER_EXPERT_ARTICLES_LIST_MAX_PAGE
 from settings import EXPERT_URL
 from tools.common import get_the_next_stage
@@ -14,10 +13,10 @@ from tools.logger import Logger
 logger = Logger(__name__).logger
 
 
-class GetExpertsUrls(Thread):
+class GetExpertsUrls(object):
 
     def __init__(self, lottery_name, expert_id, data_type, has_missed_list_urls=0):
-        super(GetExpertsUrls, self).__init__()
+        # super(GetExpertsUrls, self).__init__()
         self.lottery_name = lottery_name
         self.expert_id = expert_id
         self.data_type = data_type

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import requests
-import threading
 from bs4 import BeautifulSoup as bs
 from settings import lotteries_predict_data_db as lpdb, EXPERT_COUNT, avoid_experts_db, AVOID_EXPERTS
 from tools.save_data import SaveLotteriesData as SLD
@@ -11,7 +10,7 @@ from tools.logger import Logger
 logger = Logger(__name__).logger
 
 
-class GetExperts(threading.Thread):
+class GetExperts(object):
 
     def __init__(self, lottery_name, stage,  url, data_type, expert_page=1, has_missed_urls = 0):
         super(GetExperts, self).__init__()

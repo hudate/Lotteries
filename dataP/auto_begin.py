@@ -3,20 +3,20 @@
 获取每位专家的预测数据：get_per_expert_predict_data
 拿出３５个球，进行投票，获取票数最高的前ｎ(dlt:8, ssq:9)和前m(dlt:4, ssq:3)个球
 """
-import gevent
-from gevent import monkey, pool
+from gevent import monkey
 
 from tools.common import get_the_next_stage
 
 monkey.patch_all()
 
 import time
+from multiprocessing.dummy import Pool
 from multiprocessing import Process
 from dataP.auto_get_experts import GetExperts as GE
 from dataP.auto_get_predict_data import GetPredictData as GPD
 from dataP.auto_get_predict_data_urls import GetExpertsUrls as GEU
 from settings import EXPERT_LIST_URLS, DATA_TYPE, miss_urls_db, EXPERT_COUNT
-from settings import lotteries_predict_data_db as lpdb, MAX_EXPERTS_PAGE_COUNT, lotteries_data_db as ldb
+from settings import lotteries_predict_data_db as lpdb, MAX_EXPERTS_PAGE_COUNT
 from tools.logger import Logger
 logger = Logger(__name__).logger
 
@@ -42,14 +42,16 @@ class ExpertDataBegin(Process):
             self.lotteries_urls_list = EXPERT_LIST_URLS[:4]
 
     def begin_get_experts(self):
-        # logger.info('开始获取"%s"预测专家。' % self.lottery_name)
+        p = Pool(processes=1000)
+        logger.info('开始获取"%s"预测专家。' % self.lottery_name)
         stage = get_the_next_stage(self.lottery)
         for page in range(1, MAX_EXPERTS_PAGE_COUNT + 1):  # 获取专家的页数
             for dt_type in DATA_TYPE:
                 url = self.lotteries_urls_list[dt_type]
                 ge = GE(self.lottery_name, stage, url, dt_type, page)
-                ge.start()
-                ge.join()
+                p.apply_async(ge.run)
+        p.close()
+        p.join()
         print('获取"%s"预测专家完毕。' % self.lottery_name)
 
     def begin_get_predict_urls(self, flag=0):
@@ -68,19 +70,16 @@ class ExpertDataBegin(Process):
                 logger.info('times: %s, found_data_count: %s' % (times, len(list(found_data))))
 
                 if len(found_data) > 0:
-                    # p = pool.Pool(20)
+                    p = Pool(processes=1000)
                     for expert_data in found_data:
                         expert_id = expert_data['expert_id']
                         data_type = expert_data['data_type']
                         params = expert_data['params']
-                        print(__name__, 'Line: 68, ', expert_id, data_type)
                         geu = GEU(self.lottery_name, expert_id, data_type, flag)
                         geu.set_get_missed_articles_list_urls(params)
-                        # p.spawn(geu.run)
-                        time.sleep(0.1)
-                        geu.start()
-                        geu.join()
-                    # p.join()
+                        p.apply_async(geu.run)
+                    p.close()
+                    p.join()
                     times += 1
 
                 if (not found_data) or times > 4:
@@ -98,14 +97,15 @@ class ExpertDataBegin(Process):
                 logger.info('times: %s, found_data_count: %s' %(times, len(list(found_data))))
 
                 if len(found_data) > 0:
-                    p = pool.Pool(10)
+                    p = Pool(processes=1000)
                     for expert_data in found_data:
                         expert_id = expert_data['expert_id']
                         data_type = expert_data['data_type']
                         print(__name__, 'Line: 91, ', expert_id, data_type)
                         geu = GEU(self.lottery_name, expert_id, data_type)
-                        p.spawn(geu.run)
-                        time.sleep(0.1)
+                        p.apply_async(geu.run)
+                    p.close()
+                    p.join()
                     time.sleep(5)
                 else:
                     print('获取"%s"专家预测数据的URLS完毕。' % self.lottery_name)
@@ -130,15 +130,15 @@ class ExpertDataBegin(Process):
             logger.info('db:%s find_data:%s, found_data:%s' % (self.predict_urls_db, find_data, len(list(found_data))))
 
             if len(found_data) > 0:
-                p = pool.Pool(100)
+                p = Pool(processes=1000)
                 for url_data in found_data:
                     expert_id = url_data['expert_id']
                     data_type = url_data['data_type']
                     url = url_data['url']
                     gpd = GPD()
                     gpd.set(self.lottery_name, expert_id, data_type, url)
-                    p.spawn(gpd.start)
-                    time.sleep(0.1)
+                    p.apply_async(gpd.run)
+                p.close()
                 p.join()
                 time.sleep(5)
                 times += 1

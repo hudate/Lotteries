@@ -1,4 +1,3 @@
-import threading
 import time
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -12,7 +11,7 @@ from tools.logger import Logger
 logger = Logger(__name__).logger
 
 
-class GetPredictData(threading.Thread):
+class GetPredictData(object):
 
     def __init__(self):
         super(GetPredictData, self).__init__()
