@@ -33,53 +33,58 @@ class SendMail(object):
         self.data = set_mail_data(self.data_file)
 
         if not REAL:
-            self.data['front_right_ratio_color'] = '0a0' if self.data['front_right_ratio'] > '60.00%' else 'f00'
-            self.data['back_right_ratio_color'] = '0a0' if self.data['back_right_ratio'] > '50.00%' else '00f'
+            self.data['front_right_ratio_color'] = '0a0' if float(self.data['front_right_ratio'][:-1]) > 60.0 else 'f00'
+            self.data['back_right_ratio_color'] = '0a0' if float(self.data['back_right_ratio'][:-1]) > 50.0 else '00f'
 
     def set_message(self):
         subject_real = "预测邮件：彩票预测"  # 邮件主题
-        subject_test = "测试邮件：彩票预测"
-        content_real = '''
-        <h3 style="color:#07f"><pre>  第<font color="#f70" face="sans-serif"><u>%s</u></font>期 <font color="#80e" face="sans-serif"><u>%s</u></font>:</pre></h3>
-        <h4 style="color:#red;font:{"Arial",12}"><pre>     前区：<font color="#f00" face="sans-serif">%s</font></pre></h4>
-        <h4 style="color:#blue;font:{"Arial",12}"><pre>     后区：<font color="#00f" face="sans-serif">%s</font></pre></h4>
-        <h3 style="color:#07f"><pre>  共：<font color="#f70" face="sans-serif"><u>%s</u></font>注（%s+%s）    计：<font color="#f70" face="sans-serif"><u> %s </u></font>元</h3>
-        
-        <h3 style="color:#07f"><pre>前区预测专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>
-        <h3 style="color:#07f"><pre>前区杀球专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>
-        <h3 style="color:#07f"><pre>后区预测专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>
-        <h3 style="color:#07f"><pre>后区杀球专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>''' \
-                  % (self.data['stage'], self.data['lottery'], ', '.join(self.data['front_predict_balls']),
-                     ', '.join(self.data['back_predict_balls']), self.data['lottery_counts'], len(self.data['front_predict_balls']),
-                     len(self.data['back_predict_balls']), self.data['lottery_money'],
-                     ', '.join(self.data['front_predict_balls']),
-                     ', '.join(self.data['back_predict_balls']),
-                     ', '.join(self.data['front_predict_experts_list']),
-                     ', '.join(self.data['front_kill_experts_list']))
+        subject_test = "测试邮件：彩票预测"  # 邮件主题
+        content_real = '<h3 style="color:#07f"><pre>  第<font color="#f70" face="sans-serif"><u>%s</u></font>期 ' \
+                       '&nbsp;&nbsp;&nbsp;<font color="#80e" face="sans-serif">%s</font></pre></h3></br></hr>' \
+                       '<h3 style="color:#07f"><pre> 本期预测：</h3>' \
+                       '<h4 style="color:#red;font:{"Arial",12}"><pre>     前区：' \
+                       '<font color="#f00" face="sans-serif">%s</font></pre></h4>' \
+                       '<h4 style="color:#blue;font:{"Arial",12}"><pre>     后区：' \
+                       '<font color="#00f" face="sans-serif">%s</font></pre></h4>' \
+                       '<h3 style="color:#07f"><pre>  共：<font color="#f70" face="sans-serif"><u>%s</u></font>注' \
+                       '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;计：<font color="#f70" face="sans-serif"><u> %s </u>' \
+                       '</font>元</h3></br></hr>' \
+                       '<h3 style="color:#07f"><pre>前区预测专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>' \
+                       '<h3 style="color:#07f"><pre>前区杀球专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>' \
+                       '<h3 style="color:#07f"><pre>后区预测专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>' \
+                       '<h3 style="color:#07f"><pre>后区杀球专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>' \
+                       % (self.data['stage'], self.data['lottery'], ', '.join(self.data['front_predict_balls']),
+                          ', '.join(self.data['back_predict_balls']), self.data['lottery_counts'],
+                          self.data['lottery_money'],
+                          ', '.join(self.data['front_predict_balls']),
+                          ', '.join(self.data['back_predict_balls']),
+                          ', '.join(self.data['front_predict_experts_list']),
+                          ', '.join(self.data['front_kill_experts_list']))
 
-        content_test = '''
-                <h3 style="color:#07f"><pre>  第<font color="#f70" face="sans-serif"><u>%s</u></font>期 <font color="#80e" face="sans-serif"><u>%s</u></font>:</pre></h3>
-                
-                </hr>
-                <h3 style="color:#07f"><pre> 本期预测结果：</h3>
-                <h4 style="color:#red;font:{"Arial",12}"><pre>     前区： <font color="#f00" face="sans-serif">%s</font></pre></h4>
-                <h4 style="color:#blue;font:{"Arial",12}"><pre>     后区： <font color="#00f" face="sans-serif">%s</font></pre></h4>
-                <h3 style="color:#07f"><pre>  共： <font color="#f70" face="sans-serif"><u>%s</u></font>注&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;计： <font color="#f70" face="sans-serif"><u> %s </u></font>元</h3>
-                
-                </hr>
-                <h3 style="color:#07f"><pre> 本期开奖情况：</h3>
-                <h4 style="color:#red;font:{"Arial",12}"><pre>     前区： <font color="#f00" face="sans-serif">%s</font></pre></h4>
-                <h4 style="color:#blue;font:{"Arial",12}"><pre>     后区： <font color="#00f" face="sans-serif">%s</font></pre></h4>
-                
-                </hr>
-                <h3 style="color:#07f"><pre> 本期预测正确率：</h3>
-                <h4 style="color:#red;font:{"Arial",12}"><pre>     前区： <font color="#%s" face="sans-serif">%s</font></pre></h4>
-                <h4 style="color:#blue;font:{"Arial",12}"><pre>     后区： <font color="#%s" face="sans-serif">%s</font></pre></h4>
-                
-                <h3 style="color:#07f"><pre>前区预测专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>
-                <h3 style="color:#07f"><pre>前区杀球专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>
-                <h3 style="color:#07f"><pre>后区预测专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>
-                <h3 style="color:#07f"><pre>后区杀球专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>''' \
+        content_test = '<h3 style="color:#07f"><pre>  第<font color="#f70" face="sans-serif"><u>%s</u></font>期 ' \
+                       '&nbsp;&nbsp;&nbsp;<font color="#80e" face="sans-serif">%s</font></pre></h3></br></hr>' \
+                       '<h3 style="color:#07f"><pre> 本期预测：</h3>' \
+                       '<h4 style="color:#red;font:{"Arial",12}"><pre>     前区：' \
+                       '<font color="#f00" face="sans-serif">%s</font></pre></h4>' \
+                       '<h4 style="color:#blue;font:{"Arial",12}"><pre>     后区：' \
+                       '<font color="#00f" face="sans-serif">%s</font></pre></h4>' \
+                       '<h3 style="color:#07f"><pre>  共： <font color="#f70" face="sans-serif"><u>%s</u></font>注' \
+                       '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;计：<font color="#f70" face="sans-serif"><u> %s </u>' \
+                       '</font>元</h3></br></hr>' \
+                       '<h3 style="color:#07f"><pre> 本期开奖情况：</h3>' \
+                       '<h4 style="color:#red;font:{"Arial",12}"><pre>     前区：<font color="#f00" face="sans-' \
+                       'serif">%s</font></pre></h4>' \
+                       '<h4 style="color:#blue;font:{"Arial",12}"><pre>     后区：<font color="#00f" face="sans-' \
+                       'serif">%s</font></pre></h4></br></hr>' \
+                       '<h3 style="color:#07f"><pre> 本期预测正确率：</h3>' \
+                       '<h4 style="color:#red;font:{"Arial",12}"><pre>     前区：<font color="#%s" face="sans-' \
+                       'serif">%s</font></pre></h4>' \
+                       '<h4 style="color:#blue;font:{"Arial",12}"><pre>     后区：<font color="#%s" face="sans-' \
+                       'serif">%s</font></pre></h4></br>' \
+                       '<h3 style="color:#07f"><pre>前区预测专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>' \
+                       '<h3 style="color:#07f"><pre>前区杀球专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>' \
+                       '<h3 style="color:#07f"><pre>后区预测专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>' \
+                       '<h3 style="color:#07f"><pre>后区杀球专家：<font color="#f70" face="sans-serif"><u>%s</u></font></h3>' \
                        % (self.data['stage'], self.data['lottery'], ', '.join(self.data['front_predict_balls']),
                           ', '.join(self.data['back_predict_balls']), self.data['lottery_counts'],
                           self.data['lottery_money'],
@@ -93,7 +98,7 @@ class SendMail(object):
                           ', '.join(self.data['back_kill_experts_list']))
 
         self.message = MIMEText(content_real if REAL else content_test, "html", "utf-8")
-        self.message['Subject'] = subject_real if REAL else subject_test    # 邮件主题
+        self.message['Subject'] = subject_real if REAL else subject_test  # 邮件主题
         self.message['From'] = self.sender  # 发件人
 
     def send_mail(self):
