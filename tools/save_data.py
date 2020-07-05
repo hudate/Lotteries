@@ -17,11 +17,16 @@ class SaveLotteriesData(object):
         except Exception as e:
             logger.error(e)
 
-        if found_data is None:
+        if not found_data:
             try:
                 db.insert_one(data)
+                flag = 1
             except Exception as e:
                 logger.error(e)
+                flag = 0
+        else:
+            flag = 1
+        return flag
 
     def write_data(self, file, data):
         file_path = os.path.join(os.path.split(os.getcwd())[0], file)

@@ -111,10 +111,6 @@ DATA_TYPE = [
     3,      # 后区杀球
 ]
 
-headers = {
-    'User - Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36'
-}
-
 RIGHT_RATIO_CSV_FILE = '%s_right_ratio.csv'
 
 cookies_db = db['cookies_coll']

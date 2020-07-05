@@ -116,7 +116,6 @@ class AnalysePredictData(Thread):
         rr.set(self.lottery_name, 9)
         rr.show_right_ratio(now_stage_predict_data, now_stage_lottery_data)
 
-
     def analyse_data(self, data):
         if self.lottery_name == '双色球':
             self.lottery_db = ldb['ssq']
@@ -205,4 +204,3 @@ if __name__ == '__main__':
     apd = AnalysePredictData()
     apd.set('大乐透', 19120)
     apd.run()
-
