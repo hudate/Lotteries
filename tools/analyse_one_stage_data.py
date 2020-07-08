@@ -3,13 +3,13 @@ import os
 import time
 
 from dataP.get_now_stage_experts_predict_data import GetNowStagePredictUrl
-from settings import lotteries_data_db as ldb, DATA_TYPE, REAL, \
-    lotteries_predict_data_db as lpdb, LOTTERY_DICT_2, SETUP_FILE
+from settings import lotteries_data_db as ldb, DATA_TYPE, REAL,  LOTTERY_DICT_2, SETUP_FILE, \
+    lotteries_predict_data_db as lpdb
 from tools.auto_get_kjxx import GetKJXX
 
 from tools.save_data import SaveLotteriesData as SLD
 import numpy as np
-from tools.auto_compose_data import ComposePredictData as CSPD  # Compose nowStage Predict Data
+from tools.auto_compose_data import ComposePredictData as CSPD
 from tools.logger import Logger
 logger = Logger(__name__).logger
 
@@ -42,6 +42,7 @@ class AnalyseData(object):
 
     # 获取专家和球数（前预、前杀、后预、后杀）
     def get_experts_balls_count(self):
+        logger.info('start get experts balls count')
         with open(self.setup_file) as f:
             content = json.load(f)
         self.stage_count = content[self.lottery]['analyse_stages_count']
@@ -55,6 +56,7 @@ class AnalyseData(object):
         self.back_kill_balls_count = content[self.lottery]['back_kill_balls_count']
 
     def get_stage_list(self):
+        logger.info('get stage list')
         year = int(time.strftime("%Y"))
         last_year = year - 1
         year_list = [str(year)[-2:], str(last_year)[-2:]]
@@ -125,6 +127,7 @@ class AnalyseData(object):
         sld.save_data(self.right_location_db, right_location_data)
 
     def analyse_right_info(self):
+        logger.info('start analyse right info')
         for dt_type in DATA_TYPE:
             for stage in self.stage_list:
                 # 取出某一期的所有专家的预测数据（不包括杀球数据）
@@ -137,6 +140,7 @@ class AnalyseData(object):
                 else:
                     predict_data = list(self.kill_data_db.find(predict_find_dict, filter_dict))
                 for data in predict_data:
+                    print(data)
                     self.analyse_some_stage_data(data, lottery_data)
 
     def get_experts(self, data_type):
@@ -220,6 +224,7 @@ class AnalyseData(object):
         return predict_dict
 
     def predict_kill_experts_list(self):
+        logger.info('start predict kill experts list')
         # 前区
         front_pre_experts_list = self.expert_rank(data_type=0)[:self.front_predict_expert_count]
         logger.info('stage: %s\tred predict balls expert count: %s expert list: %s'
@@ -274,17 +279,19 @@ class AnalyseData(object):
             gnspu.run()
             predict_data.append(self.get_predict_data_from_file(data_file, self.front_predict_expert_count))
 
-        # # predict_data里边有四个列表（如果是七乐彩，就只有前两个），分别是前区预测，前区杀球预测，后区预测，后区杀球预测
+        # predict_data里边有四个列表（如果是七乐彩，就只有前两个），分别是前区预测，前区杀球预测，后区预测，后区杀球预测
         # assert (len(predict_data) == 2 * 2), '彩票名称：%s\t期望列表长度：%s\t实际列表长度：%s' % (
         #     self.lottery, 2 * 2, len(predict_data))
 
         # 进行每种配置正确率的判断
         cspd = CSPD(self.lottery)
-        predict_data = cspd.compose_predict_data(predict_data,
-                                                 self.front_predict_balls_count,
-                                                 self.front_kill_balls_count,
-                                                 self.back_predict_balls_count,
-                                                 self.back_kill_balls_count)
+        predict_data = cspd.compose_predict_data(
+            predict_data,
+            self.front_predict_balls_count,
+            self.front_kill_balls_count,
+            self.back_predict_balls_count,
+            self.back_kill_balls_count
+        )
 
         counts = cspd.compute_price(predict_data)
         money = 2 * counts
@@ -324,6 +331,7 @@ class AnalyseData(object):
         self.get_stage_list()
         self.analyse_right_info()       # 分析正确率和正确位置
         self.predict_kill_experts_list()
+        # self.get_the_next_experts_predict_kill_data()
 
 
 if __name__ == '__main__':
@@ -331,4 +339,5 @@ if __name__ == '__main__':
     logger.info('%s %s %s' % ('ssq', now_stage, 'test_data_1.json'))
     ad = AnalyseData('ssq', now_stage, 'test_data_1.json')
     ad.start_analyse()
+    print('新的十分士大夫')
     ad.get_the_next_experts_predict_kill_data()
