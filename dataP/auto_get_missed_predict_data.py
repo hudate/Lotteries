@@ -32,7 +32,7 @@ class GetMissedPredictData(object):
             times += 1
             if times < 3:
                 try:
-                    req = requests.get(url, headers=header, timeout=(5, 5))
+                    req = requests.get(url, headers=header, timeout=(5, 5), allow_redirects=True)
                     # print(url, req.status_code)
                     if req.status_code == 403:
                         logger.warn(str(req.history) + url + req.status_code)
@@ -174,14 +174,16 @@ class GetMissedPredictData(object):
     def run(self):
         for i in range(50):
             t3 = time.time()
-            urls_info = self.get_urls()
+            urls_info = list(self.get_urls())
+            # print(len(list(urls_info)))
+            print(type(urls_info))
             p = Pool(processes=10 * os.cpu_count())
-            # p = threadpool.ThreadPool(maxsize=200)
             if urls_info:
-                print(urls_info)
                 for url_info in urls_info:
-                    print(url_info)
-                    p.apply_async(self.get_data, url_info['url'], url_info['data_type'], url_info['expert_id'])
+                    p.apply_async(
+                        func=self.get_data,
+                        args=(url_info['url'], url_info['data_type'], url_info['expert_id'])
+                    )
                 p.close()
                 p.join()
             del p
