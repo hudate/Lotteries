@@ -25,21 +25,36 @@
     "common_actions_time": {
         "get_lotteries_data": "04:10",
         "get_proxies": "04:15",
-        "get_the_next_stage_experts": "04:40",
-        "get_the_next_stage_experts_articles_list": "05:00",
-        "get_the_next_stage_experts_again": "06:20",
-        "get_the_next_stage_experts_articles_list_again": "07:40",
-        "get_the_next_stage_experts_articles_list_third": "08:20",
-        "get_the_next_stage_experts_all_predict_data": "09:10",
-        "get_the_next_stage_experts_all_predict_data_again": "10:30",
-        "get_proxies_again": "11:20",
+        "get_the_next_stage_experts": "04:30",
+        "get_the_next_stage_experts_articles_list_01st": "04:45",
+        "get_the_next_stage_experts_again": "05:00",
+        "get_the_next_stage_experts_articles_list_02nd": "05:15",
+        "get_the_next_stage_experts_articles_list_03rd": "05:30",
+        "get_the_next_stage_experts_articles_list_04th": "05:45",
+        "get_the_next_stage_experts_articles_list_05th": "06:00",
+        "get_the_next_stage_experts_all_predict_data_01st": "07:00",
+        "get_the_next_stage_experts_all_predict_data_02nd": "07:30",
+        "get_the_next_stage_experts_all_predict_data_03rd": "08:00",
+        "get_the_next_stage_experts_all_predict_data_04th": "08:30",
+        "get_the_next_stage_experts_all_predict_data_05th": "09:00",
+        "get_the_next_stage_experts_all_predict_data_06th": "09:30",
+        "get_proxies_again": "10:00",
         "check_the_next_stage_experts_articles_list": "11:40",
-        "get_the_next_stage_experts_articles_list_fourth": "11:45",
-        "get_the_next_stage_experts_all_predict_data_third": "12:25",
-        "get_the_next_stage_experts_articles_list_fifth": "13:15",
-        "get_the_next_stage_experts_all_predict_data_fourth": "14:25",
-        "get_the_next_stage_experts_all_predict_data_fifth": "16:00",
-        "get_the_next_stage_experts_list": "16:40"
+        "get_the_next_stage_experts_articles_list_06th": "11:45",
+        "get_the_next_stage_experts_all_predict_data_07th": "12:00",
+        "get_the_next_stage_experts_all_predict_data_08th": "12:30",
+        "get_the_next_stage_experts_all_predict_data_09th": "13:00",
+        "get_the_next_stage_experts_all_predict_data_10th": "13:30",
+        "get_the_next_stage_experts_all_predict_data_11th": "13:55",
+        "get_proxies_third": "14:20",
+        "get_the_next_stage_experts_all_predict_data_12th": "14:25",
+        "get_the_next_stage_experts_all_predict_data_13th": "15:50",
+        "get_the_next_stage_experts_all_predict_data_14th": "15:15",
+        "get_the_next_stage_experts_all_predict_data_15th": "15:40",
+        "get_the_next_stage_experts_all_predict_data_16th": "16:05",
+        "get_the_next_stage_experts_list": "16:40",
+        "friday_start": "00:05",
+        "friday_end": "23:55"
     },
 
     "real_actions_time": {
@@ -63,6 +78,9 @@
         "start_time": "03:50",
         "end_time": "23:45"
     },
+
+    "pause_delta_time": 90,
+    "every_times_count": 100,
 
     "dlt": {
         "analyse_stages_count": 20,
@@ -144,6 +162,8 @@
         "dlt/ssq": "预测参数：用于预测每期的参数",
         "dlt_group/ssq_group": "计算预测参数",
         "dlt_group_cn/ssq_group_cn": "把英语的key对应到汉语的key，以便发表预测数据。",
-        "num2cn": "把数字变为网站数据中需要的字"
+        "num2cn": "把数字变为网站数据中需要的字",
+        "pause_delta_time": "指爬取漏爬数据时，每两次之间的时间间隔，单位：秒",
+        "every_times_count": "指每次爬取漏爬数据的个数"
     }
 }
