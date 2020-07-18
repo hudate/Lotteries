@@ -3,6 +3,8 @@
 获取每位专家的预测数据：get_per_expert_predict_data
 拿出３５个球，进行投票，获取票数最高的前ｎ(dlt:8, ssq:9)和前m(dlt:4, ssq:3)个球
 """
+import os
+
 from gevent import monkey
 
 from tools.common import get_the_next_stage
@@ -23,14 +25,15 @@ logger = Logger(__name__).logger
 
 class ExpertDataBegin(Process):
 
-    def __init__(self, lottery):
+    def __init__(self, lottery, pause_delta_time=90, every_times_count=100):
         super(ExpertDataBegin, self).__init__()
         self.lottery = lottery
         self.expert_db = lpdb[lottery + '_experts']
         self.articles_miss_urls_db = miss_urls_db['predict_urls']
-        self.predict_urls_db = miss_urls_db['predict_urls']
         self.articles_list_miss_urls_db = miss_urls_db['articles_list']
         self.miss_experts_db = miss_urls_db['experts']
+        self.pause_delta_time = pause_delta_time
+        self.every_times_count = every_times_count
         self.flag = 1
 
         if self.lottery == 'ssq' or self.lottery == '双色球':
@@ -42,7 +45,7 @@ class ExpertDataBegin(Process):
             self.lotteries_urls_list = EXPERT_LIST_URLS[:4]
 
     def begin_get_experts(self):
-        p = Pool(processes=1000)
+        p = Pool(processes=os.cpu_count() * 5)
         logger.info('开始获取"%s"预测专家。' % self.lottery_name)
         stage = get_the_next_stage(self.lottery)
         for page in range(1, MAX_EXPERTS_PAGE_COUNT + 1):  # 获取专家的页数
@@ -70,7 +73,7 @@ class ExpertDataBegin(Process):
                 logger.info('times: %s, found_data_count: %s' % (times, len(list(found_data))))
 
                 if len(found_data) > 0:
-                    p = Pool(processes=1000)
+                    p = Pool(processes=os.cpu_count() * 5)
                     for expert_data in found_data:
                         expert_id = expert_data['expert_id']
                         data_type = expert_data['data_type']
@@ -97,7 +100,7 @@ class ExpertDataBegin(Process):
                 logger.info('times: %s, found_data_count: %s' %(times, len(list(found_data))))
 
                 if len(found_data) > 0:
-                    p = Pool(processes=1000)
+                    p = Pool(processes=os.cpu_count() * 5)
                     for expert_data in found_data:
                         expert_id = expert_data['expert_id']
                         data_type = expert_data['data_type']
@@ -117,21 +120,26 @@ class ExpertDataBegin(Process):
 
     def begin_get_predict_data(self):
         # logger.info('开始获取"%s"专家预测数据。' % self.lottery_name)
-        times = 0
-        while 1:
-            found_data = None
+        times = 1
+        while times < 5:
+            urls_data = None
             find_data = {'lottery': self.lottery_name}
             filter_data = {'_id': 0}
+            t3 = time.time()
+            start_count = 0
+            processes = os.cpu_count()
+
             try:
-                found_data = list(self.predict_urls_db.find(find_data, filter_data))
+                start_count = self.articles_miss_urls_db.count_documents({})
+                urls_data = list(self.articles_miss_urls_db.find(find_data, filter_data).limit(self.every_times_count))
             except Exception as e:
                 logger.error(e)
 
-            logger.info('db:%s find_data:%s, found_data:%s' % (self.predict_urls_db, find_data, len(list(found_data))))
+            logger.info('db:%s find_data:%s, found_data:%s' % (self.articles_miss_urls_db, find_data, len(list(urls_data))))
 
-            if len(found_data) > 0:
-                p = Pool(processes=1000)
-                for url_data in found_data:
+            if urls_data:
+                p = Pool(processes=processes)
+                for url_data in urls_data:
                     expert_id = url_data['expert_id']
                     data_type = url_data['data_type']
                     url = url_data['url']
@@ -140,12 +148,28 @@ class ExpertDataBegin(Process):
                     p.apply_async(gpd.run)
                 p.close()
                 p.join()
-                time.sleep(5)
-                times += 1
 
-            if (not found_data) or times > 4:
-                print('尝试次数：%s' % times)
-                break
+            t4 = time.time()
+            end_count = self.articles_miss_urls_db.count_documents({})
+            record_str = 'start_time: %s, end_time: %s, cost_time: %04.2f, times: %s, pause_delta_time: %s, ' \
+                         'every_times_count: %s start_count: %s, end_count: %s, real_get_count: %s urls_info_length: %s' \
+                         ' processes: %s' % (
+                             time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(t3)),
+                             time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(t4)),
+                             (t4 - t3),
+                             times,
+                             self.pause_delta_time,
+                             self.every_times_count,
+                             start_count,
+                             end_count,
+                             (start_count - end_count),
+                             len(urls_data),
+                             processes
+                         )
+
+            logger.info(record_str)
+            time.sleep(self.pause_delta_time)
+            times += 1
 
     def is_need_get_experts(self):
         if len(list(self.expert_db.find({}))) >= len(DATA_TYPE) * EXPERT_COUNT:

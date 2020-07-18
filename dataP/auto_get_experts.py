@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import requests
 from bs4 import BeautifulSoup as bs
-from settings import lotteries_predict_data_db as lpdb, EXPERT_COUNT, avoid_experts_db, AVOID_EXPERTS
+from settings import lotteries_predict_data_db as lpdb, EXPERT_COUNT, avoid_experts_db, AVOID_EXPERTS, saved_db
 from tools.save_data import SaveLotteriesData as SLD
 from settings import LOTTERY_DICT, miss_urls_db
 from tools.ua import ua
@@ -54,14 +54,14 @@ class GetExperts(object):
         else:
             insert_data = {'lottery': self.lottery_name, 'data_type': self.data_type,
                            'url': self.url, 'params': self.params}
-            db = lpdb['predict_urls']
+            db = saved_db['saved_predict_urls']
             found_data = None
             try:
                 found_data = db.find_one(insert_data)
             except Exception as e:
                 raise e
 
-            if found_data is None:
+            if not found_data:
                 w_db = SLD()
                 w_db.save_data(self.miss_url_db, insert_data)
 
