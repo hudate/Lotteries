@@ -8,8 +8,8 @@ class SetProxies(object):
         self.db = proxies_tb
 
     def set_proxies(self):
-        find_data = {'type': 'https'}
+        find_data = {}
         filter_data = {'_id': 0}
         found_data = list(self.db.find(find_data, filter_data))
         data = random.choice(found_data)
-        return {data['type']: data['info']}
+        return {'https': data['info']}
