@@ -48,7 +48,7 @@ class GetProxies(object):
         self.set_header()
         req = None
         try:        # 请求成功
-            req = requests.get(url=url, headers=self.header, proxies=self.proxy, verify=False, timeout=10)
+            req = requests.get(url=url, headers=self.header, proxies=self.proxy, verify=False, timeout=30)
         except Exception as e:  # 请求失败
             error_count += 1
             failed_info = {
