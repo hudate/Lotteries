@@ -3,7 +3,7 @@
 import os
 import pymongo
 
-pym_client = pymongo.MongoClient(host='localhost', port=27017, waitQueueTimeoutMS=100, connect=False)
+pym_client = pymongo.MongoClient(host='localhost', port=27017, waitQueueTimeoutMS=100)
 db = pym_client['Lotteries']
 
 # 往期开奖数据的存储
@@ -32,7 +32,6 @@ lotteries_predict_data_db = {
     'dlt_right_location': db['right_location_dlt'],
     'ssq_articles_list': db['articles_list_ssq'],
     'dlt_articles_list': db['articles_list_dlt'],
-    'predict_urls': db['saved_predict_urls']
 }
 
 
