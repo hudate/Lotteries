@@ -10,10 +10,9 @@ class SaveProxies(object):
         self.coll = mongo_setting['proxies_coll']
         self.redis = redis_setting['PROXIES']['redis']
         self.r_key = redis_setting['proxies_key']
-
+        self.file = os.path.join(os.getcwd(), 'proxies_file.csv')
 
     def save_to_mongo(self, proxy):
-        self.save_to_redis(proxy)
         data_dict = {'type': list(proxy.keys())[0], 'info': list(proxy.values())[0] }
         if not list(self.coll.find(data_dict, {'_id': 0})):
             self.coll.insert_one(data_dict)
@@ -21,14 +20,12 @@ class SaveProxies(object):
         else:
             return 0
 
-
     def save_to_file(self, proxy):
         if not os.path.exists(self.file):
             with open(self.file, 'a', encoding='utf-8') as f:
                 f.write(','.join([proxy.keys(), '\n']))
         with open(self.file, 'a', encoding='utf-8') as f:
             f.write(','.join([proxy.values(), '\n']))
-
 
     def save_to_redis(self, proxy):
         if list(proxy.keys())[0] == 'https':
@@ -39,4 +36,4 @@ if __name__ == '__main__':
     list_proxy = ['https://121.40.90.189:8001', 'http://121.40.90.189:8001', 'https://123.123.12.23:8000']
     sp = SaveProxies()
     for proxy in list_proxy:
-        sp.save_to_redis(proxy)
+        sp.save_to_mongo(proxy)
