@@ -56,8 +56,7 @@ class GetMissedPredictData(object):
                     try:
                         req = requests.get(url, headers=header, timeout=(10, 15), allow_redirects=True)
                         if req.status_code == 403:
-                            print(req.text)
-                            logger.warning(str(req.history) + ' ' + url + ' ' + str(req.status_code))
+                            self.get_predict_data(url, data_type, expert_id, times)
                         data = req.text
                     except Exception as e:
                         logger.error(e)
@@ -71,8 +70,7 @@ class GetMissedPredictData(object):
                         req = requests.get(url, headers=header, proxies=proxy, timeout=(20, 15),
                                            verify=False)
                         if req.status_code == 403:
-                            print(req.text)
-                            logger.warning(str(req.history) + ' ' + url + ' ' + str(req.status_code))
+                            self.get_predict_data(url, data_type, expert_id, times)
                         data = req.text
                     except Exception as e:
                         logger.error(e)
@@ -102,8 +100,6 @@ class GetMissedPredictData(object):
         if '乐透' in title:
             title.split('乐透')
             self.dlt_parse(ba_data, url, title.split('乐透'), data_type, expert_id)
-
-
 
         # try:
         #     title = ba_data.find_all('title')[0].text

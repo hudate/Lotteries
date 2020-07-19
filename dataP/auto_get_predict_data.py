@@ -209,7 +209,8 @@ class GetPredictData(object):
                     try:
                         req = requests.get(self.url, headers=header, timeout=(10, 15), allow_redirects=True)
                         if req.status_code == 403:
-                            logger.warning(str(req.history) + self.url + str(req.status_code))
+                            # logger.warning(str(req.history) + self.url + str(req.status_code))
+                            self.get_predict_data(times)
                         data = req.text
                     except Exception as e:
                         logger.error(e)
@@ -223,7 +224,8 @@ class GetPredictData(object):
                         req = requests.get(self.url, headers=header, proxies=proxy, timeout=(20, 15),
                                            verify=False)
                         if req.status_code == 403:
-                            logger.warning(str(req.history) + self.url + str(req.status_code))
+                            # logger.warning(str(req.history) + self.url + str(req.status_code))
+                            self.get_predict_data(times)
                         data = req.text
                     except Exception as e:
                         logger.error(e)
@@ -244,7 +246,6 @@ class GetPredictData(object):
                 print('本次gg, url: ', self.url)
 
     def parse_data(self, data, times):
-        logger.info(self.url + ' ' + str(times))
         ba_data = bs(data, 'lxml')
         title = ''
         try:
