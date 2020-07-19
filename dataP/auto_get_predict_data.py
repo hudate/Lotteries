@@ -45,7 +45,6 @@ class GetPredictData(object):
         find_data = {'url': self.url, 'data_type': self.data_type}
         found_data = list(self.articles_miss_urls_db.find(find_data, {'_id': 1, 'url': 1, 'data_type': 1, 'expert_id': 1, 'expert_name': 1}))
         try:
-            logger.info('found %s data' % len(found_data))
             for data in found_data:
                 print(find_data)
                 print(data)
@@ -255,11 +254,9 @@ class GetPredictData(object):
             self.get_predict_data(times)
 
         if '色球' in title:
-            logger.info('dlt')
             self.ssq_parse(ba_data, title.split('色球'))
 
         if '乐透' in title:
-            logger.info('dlt')
             self.dlt_parse(ba_data, title.split('乐透'))
 
     def run(self):

@@ -46,7 +46,7 @@ def start_ctrl(lottery, now_stage, work_times):
     data_file = DATA_FILE % (time.strftime('%Y-%m-%d'), lottery, now_stage)
     sm = SendMail(data_file)
     logger.info('主机：%s 彩票：%s 期数：%s 数据文件：%s' % (hostname, lottery, now_stage, data_file))
-    # sm.send_flush(now_time() + ' 主机：%s, 彩票：%s, 期数：%s 数据文件：%s' % (hostname, lottery, now_stage, data_file))
+    sm.send_flush(now_time() + ' 主机：%s, 彩票：%s, 期数：%s 数据文件：%s' % (hostname, lottery, now_stage, data_file))
     ad = AnalyseData(lottery, now_stage, data_file)
     global process_flag
     process_flag = 1
@@ -65,16 +65,17 @@ def start_ctrl(lottery, now_stage, work_times):
                     sm.send_flush('%s %s' % (now_time(), hostname) + ' 下班，明天是个好日子！！')
                     os.kill(os.getpid(), signal.SIGKILL)
 
-                # 开始获取代理
+                # 开始获取往期的开奖数据
                 if key == 'get_lotteries_data':
                     logger.info('开始获取往期的开奖数据。')
                     sm.send_flush('%s %s' % (now_time(), hostname) + ' 开始获取往期的开奖数据。')
                     bag = abg.Begin(lottery)  # 获取往期的开奖数据
                     bag.begin()
 
-                if key == 'get_proxies':
-                    logger.info('开始获取代理。')
-                    sm.send_flush('%s %s' % (now_time(), hostname) + ' 开始获取代理！')
+                # 初次获取代理
+                if key == 'get_proxies_01st':
+                    logger.info('初次获取代理。')
+                    sm.send_flush('%s %s' % (now_time(), hostname) + ' 初次获取代理！')
                     clear_proxies_db()
                     gp = GetProxies()
                     gp.start()
@@ -107,19 +108,19 @@ def start_ctrl(lottery, now_stage, work_times):
                 if key == 'get_the_next_stage_experts_articles_list_03rd':
                     logger.info('三次获取下期每个专家的预测文章的URL列表!')
                     sm.send_flush('%s %s' % (now_time(), hostname) + ' 三次获取下期每个专家的预测文章的URL列表！')
-                    bg.begin_get_predict_urls(1)
+                    bg.get_predict_urls()
 
                 # 获取本期的所有专家的预测数据url列表-补救措施
                 if key == 'get_the_next_stage_experts_articles_list_04rd':
                     logger.info('四次获取下期每个专家的预测文章的URL列表!')
                     sm.send_flush('%s %s' % (now_time(), hostname) + ' 四次获取下期每个专家的预测文章的URL列表！')
-                    bg.begin_get_predict_urls(1)
+                    bg.get_predict_urls()
 
                 # 获取本期的所有专家的预测数据url列表-补救措施
                 if key == 'get_the_next_stage_experts_articles_list_05rd':
                     logger.info('五次获取下期每个专家的预测文章的URL列表!')
                     sm.send_flush('%s %s' % (now_time(), hostname) + ' 五次获取下期每个专家的预测文章的URL列表！')
-                    bg.begin_get_predict_urls(1)
+                    bg.get_predict_urls()
 
                 # 获取当前待开奖的预测数据
                 if key == 'get_the_next_stage_experts_all_predict_data_01st':
@@ -133,7 +134,7 @@ def start_ctrl(lottery, now_stage, work_times):
                     sm.send_flush('%s %s' % (now_time(), hostname) + ' 二次获取每个专家的所有预测数据！')
                     bg.get_predict_data()
 
-                # 获取当前待开奖的预测数据
+                # 获取当前待开奖的预测数据-补救措施
                 if key == 'get_the_next_stage_experts_all_predict_data_03rd':
                     logger.info('三次获取每个专家的所有预测数据!')
                     sm.send_flush('%s %s' % (now_time(), hostname) + ' 三次获取每个专家的所有预测数据！')
@@ -145,7 +146,7 @@ def start_ctrl(lottery, now_stage, work_times):
                     sm.send_flush('%s %s' % (now_time(), hostname) + ' 四次获取每个专家的所有预测数据！')
                     bg.get_predict_data()
 
-                # 获取当前待开奖的预测数据
+                # 获取当前待开奖的预测数据-补救措施
                 if key == 'get_the_next_stage_experts_all_predict_data_05th':
                     logger.info('五次获取每个专家的所有预测数据!')
                     sm.send_flush('%s %s' % (now_time(), hostname) + ' 五次获取每个专家的所有预测数据！')
@@ -157,9 +158,10 @@ def start_ctrl(lottery, now_stage, work_times):
                     sm.send_flush('%s %s' % (now_time(), hostname) + ' 六次获取每个专家的所有预测数据！')
                     bg.get_predict_data()
 
-                if key == 'get_proxies_again':
+                # 二次获取代理
+                if key == 'get_proxies_02nd':
                     logger.info('二次获取代理。')
-                    sm.send_flush('%s %s' % (now_time(), hostname) + ' 再次获取代理！')
+                    sm.send_flush('%s %s' % (now_time(), hostname) + ' 二次获取代理！')
                     clear_proxies_db()
                     gp = GetProxies()
                     gp.start()
@@ -201,9 +203,9 @@ def start_ctrl(lottery, now_stage, work_times):
                     sm.send_flush('%s %s' % (now_time(), hostname) + ' 十一次获取每个专家的所有预测数据！')
                     bg.get_predict_data()
 
-                if key == 'get_proxies_third':
+                if key == 'get_proxies_03rd':
                     logger.info('三次获取代理。')
-                    sm.send_flush('%s %s' % (now_time(), hostname) + ' 再次获取代理！')
+                    sm.send_flush('%s %s' % (now_time(), hostname) + ' 三次获取代理！')
                     clear_proxies_db()
                     gp = GetProxies()
                     gp.start()
@@ -262,22 +264,16 @@ def start_ctrl(lottery, now_stage, work_times):
                     sm.send_flush('%s %s' % (now_time(), hostname) + ' 二十次获取每个专家的所有预测数据！')
                     bg.get_predict_data()
 
-                # 获取当前待开奖的预测数据-补救措施
-                if key == 'get_the_next_stage_experts_all_predict_data_21st':
-                    logger.info('二十一次获取每个专家的所有预测数据!')
-                    sm.send_flush('%s %s' % (now_time(), hostname) + ' 二十一次获取每个专家的所有预测数据！')
-                    bg.get_predict_data()
-
-                # 获取当前期的专家列表，并记入DATA_FILE
+                # 开始分析“预测专家列表”，并记入DATA_FILE
                 if key == 'get_the_next_stage_experts_list':
-                    logger.info('开始分析下期的“预测专家列表”！')
-                    sm.send_flush('%s %s %s' % (now_time(), hostname, data_file) + ' 开始分析下期的“预测专家列表”！')
+                    logger.info('开始分析“预测专家列表”！')
+                    sm.send_flush('%s %s %s' % (now_time(), hostname, data_file) + ' 开始分析“预测专家列表”！')
                     ad.start_analyse()
 
-                # 获取当前期的专家们的预测数据
+                # 依据“预测专家列表”获取“专家预测数据”
                 if key == 'get_the_next_stage_experts_predict_data':
-                    logger.info('开始获取下期的“专家预测数据”！')
-                    sm.send_flush('%s %s %s' % (now_time(), hostname, data_file) + ' 开始获取下期的“专家预测数据”！')
+                    logger.info('依据“预测专家列表”获取“专家预测数据”！')
+                    sm.send_flush('%s %s %s' % (now_time(), hostname, data_file) + ' 依据“预测专家列表”获取“专家预测数据”！')
                     ad.get_the_next_experts_predict_kill_data()
 
                 # 开始发送邮件

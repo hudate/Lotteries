@@ -45,6 +45,8 @@ class GetNowStagePredictUrl(object):
         if href_data:
             urls = [href.split(r'\" target=\"_blank\"')[0] for href in href_data]
             stages = [stage[-3:] for stage in stage_data]
+            print(self.now_stage)
+            # TODO 此处会报错，原因是每次的预测验证期数不一定在专家的预测list网页中
             stage_index = stages.index(self.now_stage[-3:])
 
         if urls:

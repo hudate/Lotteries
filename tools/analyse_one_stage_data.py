@@ -1,6 +1,7 @@
 import json
 import os
 import time
+from multiprocessing.dummy import Pool
 
 from dataP.get_now_stage_experts_predict_data import GetNowStagePredictUrl
 from settings import lotteries_data_db as ldb, DATA_TYPE, REAL,  LOTTERY_DICT_2, SETUP_FILE, \
@@ -126,22 +127,28 @@ class AnalyseData(object):
         sld.save_data(self.right_ratio_db, right_ratio_data)
         sld.save_data(self.right_location_db, right_location_data)
 
+    def analyse_right_info_by_data_type(self, dt_type):
+        for stage in self.stage_list:
+            # 取出某一期的所有专家的预测数据（不包括杀球数据）
+            find_dict = {'stage': stage}
+            filter_dict = {'_id': 0}
+            predict_find_dict = {'stage': '20' + stage, 'data_type': dt_type}
+            lottery_data = self.lottery_data_db.find_one(find_dict, filter_dict)
+            if dt_type < 2:
+                predict_data = list(self.predict_data_db.find(predict_find_dict, filter_dict))
+            else:
+                predict_data = list(self.kill_data_db.find(predict_find_dict, filter_dict))
+            for data in predict_data:
+                print(data)
+                self.analyse_some_stage_data(data, lottery_data)
+
     def analyse_right_info(self):
         logger.info('start analyse right info')
+        pool = Pool(processes=4)
         for dt_type in DATA_TYPE:
-            for stage in self.stage_list:
-                # 取出某一期的所有专家的预测数据（不包括杀球数据）
-                find_dict = {'stage': stage}
-                filter_dict = {'_id': 0}
-                predict_find_dict = {'stage': '20'+stage, 'data_type': dt_type}
-                lottery_data = self.lottery_data_db.find_one(find_dict, filter_dict)
-                if dt_type < 2:
-                    predict_data = list(self.predict_data_db.find(predict_find_dict, filter_dict))
-                else:
-                    predict_data = list(self.kill_data_db.find(predict_find_dict, filter_dict))
-                for data in predict_data:
-                    print(data)
-                    self.analyse_some_stage_data(data, lottery_data)
+            pool.apply_async(func=self.analyse_right_info_by_data_type, args=(dt_type, ))
+        pool.close()
+        pool.join()
 
     def get_experts(self, data_type):
         find_dict = {'data_type': data_type, 'stage': self.now_stage, 'lottery': self.lottery_name}
@@ -227,7 +234,7 @@ class AnalyseData(object):
         logger.info('start predict kill experts list')
         # 前区
         front_pre_experts_list = self.expert_rank(data_type=0)[:self.front_predict_expert_count]
-        logger.info('stage: %s\tred predict balls expert count: %s expert list: %s'
+        logger.info('stage: %s red predict balls expert count: %s expert list: %s'
               % (self.now_stage, len(front_pre_experts_list),  front_pre_experts_list))
 
         # TODO 需要实现获取数据的功能， 下同
@@ -338,6 +345,8 @@ if __name__ == '__main__':
     now_stage = '2020009'
     logger.info('%s %s %s' % ('ssq', now_stage, 'test_data_1.json'))
     ad = AnalyseData('ssq', now_stage, 'test_data_1.json')
+    t1 = time.time()
     ad.start_analyse()
-    print('新的十分士大夫')
-    ad.get_the_next_experts_predict_kill_data()
+    t2 = time.time()
+    print('新的十分士大夫,', t2 - t1)
+    # ad.get_the_next_experts_predict_kill_data()

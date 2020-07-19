@@ -4,13 +4,7 @@
 拿出３５个球，进行投票，获取票数最高的前ｎ(dlt:8, ssq:9)和前m(dlt:4, ssq:3)个球
 """
 import os
-
-from gevent import monkey
-
 from tools.common import get_the_next_stage
-
-monkey.patch_all()
-
 import time
 from multiprocessing.dummy import Pool
 from multiprocessing import Process
@@ -20,6 +14,7 @@ from dataP.auto_get_predict_data_urls import GetExpertsUrls as GEU
 from settings import EXPERT_LIST_URLS, DATA_TYPE, miss_urls_db, EXPERT_COUNT
 from settings import lotteries_predict_data_db as lpdb, MAX_EXPERTS_PAGE_COUNT
 from tools.logger import Logger
+
 logger = Logger(__name__).logger
 
 
@@ -45,8 +40,8 @@ class ExpertDataBegin(Process):
             self.lotteries_urls_list = EXPERT_LIST_URLS[:4]
 
     def begin_get_experts(self):
-        p = Pool(processes=os.cpu_count() * 5)
         logger.info('开始获取"%s"预测专家。' % self.lottery_name)
+        p = Pool(processes=os.cpu_count() * 5)
         stage = get_the_next_stage(self.lottery)
         for page in range(1, MAX_EXPERTS_PAGE_COUNT + 1):  # 获取专家的页数
             for dt_type in DATA_TYPE:
@@ -58,74 +53,54 @@ class ExpertDataBegin(Process):
         print('获取"%s"预测专家完毕。' % self.lottery_name)
 
     def begin_get_predict_urls(self, flag=0):
-        # logger.info('开始获取"%s"专家预测数据的URLS。' % self.lottery_name)
+        logger.info('开始获取"%s"每个专家预测数据的全部URLs。' % self.lottery_name)
+        db = self.articles_list_miss_urls_db if flag else self.expert_db
         times = 0
-        if flag:
-            while 1:
-                found_data = None
-                find_data = {'lottery': self.lottery_name}
-                filter_data = {'_id': 0}
-                try:
-                    found_data = list(self.articles_list_miss_urls_db.find(find_data, filter_data))
-                except Exception as e:
-                    logger.error(e)
+        while 1:
+            found_data = []
+            find_data = {'lottery': self.lottery_name}
+            filter_data = {'_id': 0}
+            try:
+                found_data = list(db.find(find_data, filter_data))
+            except Exception as e:
+                logger.error(e)
 
-                logger.info('times: %s, found_data_count: %s' % (times, len(list(found_data))))
+            logger.info('times: %s, found_data_count: %s' % (times, len(list(found_data))))
 
-                if len(found_data) > 0:
-                    p = Pool(processes=os.cpu_count() * 5)
-                    for expert_data in found_data:
-                        expert_id = expert_data['expert_id']
-                        data_type = expert_data['data_type']
+            if len(found_data) > 0:
+                p = Pool(processes=os.cpu_count() * 5)
+                for expert_data in found_data:
+                    expert_id = expert_data['expert_id']
+                    data_type = expert_data['data_type']
+                    if flag:
                         params = expert_data['params']
                         geu = GEU(self.lottery_name, expert_id, data_type, flag)
                         geu.set_get_missed_articles_list_urls(params)
-                        p.apply_async(geu.run)
-                    p.close()
-                    p.join()
-                    times += 1
-
-                if (not found_data) or times > 4:
-                    break
-        else:
-            while 1:
-                found_data = None
-                find_data = {'lottery': self.lottery_name}
-                filter_data = {'_id': 0}
-                try:
-                    found_data = list(self.expert_db.find(find_data, filter_data))
-                except Exception as e:
-                    logger.error(e)
-
-                logger.info('times: %s, found_data_count: %s' %(times, len(list(found_data))))
-
-                if len(found_data) > 0:
-                    p = Pool(processes=os.cpu_count() * 5)
-                    for expert_data in found_data:
-                        expert_id = expert_data['expert_id']
-                        data_type = expert_data['data_type']
-                        print(__name__, 'Line: 91, ', expert_id, data_type)
+                    else:
                         geu = GEU(self.lottery_name, expert_id, data_type)
-                        p.apply_async(geu.run)
-                    p.close()
-                    p.join()
-                    time.sleep(5)
-                else:
-                    print('获取"%s"专家预测数据的URLS完毕。' % self.lottery_name)
-                    break
+                    p.apply_async(geu.run)
+                p.close()
+                p.join()
+            else:
+                logger.info('本次获取"%s"每个专家预测数据的全部URLs完毕，爬取次数: %s, 数据库中没有需要爬取的"%s"数'
+                            '据。' % (self.lottery_name, times, self.lottery_name))
+                break
 
-                times += 1
-                if (not found_data) or times > 4:
-                    break
+            if times > 4:
+                logger.info('本次获取"%s"每个专家预测数据的全部URLs完毕, 爬取次数: %s, 但并不保证全部专家的预测数据的URLs"%s"数'
+                            '据已经爬取完成。' % (self.lottery_name, times, self.lottery_name))
+                break
+            times += 1
+            time.sleep(10)
 
     def begin_get_predict_data(self):
-        # logger.info('开始获取"%s"专家预测数据。' % self.lottery_name)
+        logger.info('开始获取"%s"每个专家所有的预测数据（实际只有过去60期）。' % self.lottery_name)
         times = 1
         while times < 5:
             urls_data = None
             find_data = {'lottery': self.lottery_name}
             filter_data = {'_id': 0}
-            t3 = time.time()
+            start_time = time.time()
             start_count = 0
             processes = os.cpu_count()
 
@@ -149,14 +124,14 @@ class ExpertDataBegin(Process):
                 p.close()
                 p.join()
 
-            t4 = time.time()
+            end_time = time.time()
             end_count = self.articles_miss_urls_db.count_documents({})
             record_str = 'start_time: %s, end_time: %s, cost_time: %04.2f, times: %s, pause_delta_time: %s, ' \
                          'every_times_count: %s start_count: %s, end_count: %s, real_get_count: %s urls_info_length: %s' \
                          ' processes: %s' % (
-                             time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(t3)),
-                             time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(t4)),
-                             (t4 - t3),
+                             time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time)),
+                             time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time)),
+                             (end_time - start_time),
                              times,
                              self.pause_delta_time,
                              self.every_times_count,
@@ -195,7 +170,7 @@ class ExpertDataBegin(Process):
             self.begin_get_predict_urls()
 
         if self.is_need_get_predict_urls():
-            print('is_need_get_predict_urls')
+            print('need to get predict urls'.title())
             self.begin_get_predict_urls(1)
 
     def get_predict_data(self):
@@ -224,5 +199,5 @@ class ExpertDataBegin(Process):
 if __name__ == '__main__':
     eb = ExpertDataBegin('dlt')
     # eb.begin_get_predict_urls(1)      # 获取丢失的文章列表
-    eb.begin_get_predict_data()
+    eb.get_predict_data()
     # eb.run()
