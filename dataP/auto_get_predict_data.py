@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup as bs
-import time
+from gevent import time
 import urllib3
-from gevent import thread
 urllib3.disable_warnings()
 import requests
 from settings import lotteries_predict_data_db as lpdb, saved_db
@@ -46,14 +45,11 @@ class GetPredictData(object):
         found_data = list(self.articles_miss_urls_db.find(find_data, {'_id': 1, 'url': 1, 'data_type': 1, 'expert_id': 1, 'expert_name': 1}))
         try:
             for data in found_data:
-                print(find_data)
-                print(data)
                 self.articles_miss_urls_db.delete_one(data)
         except Exception as e:
             logger.error(e)
 
     def save_balls(self, expert_name, stage, show_time, balls):
-        print(self.lottery_name, expert_name, self.expert_id, stage, show_time, balls, self.data_type, self.url)
         data = {
             'lottery': self.lottery_name,
             'expert_id': self.expert_id,
@@ -67,13 +63,12 @@ class GetPredictData(object):
 
         sld = SLD()
         if sld.save_data(self.db, data):
-            thread.sleep(0.2)
+            time.sleep(0.2)
             if self.save_url(sld):
-                thread.sleep(0.2)
+                time.sleep(0.2)
                 self.remove_url()
 
     def ssq_parse(self, data, title):
-        print('ssq解析')
         balls = []
         try:
             expert_name = lpdb['all_experts'].find_one(
@@ -115,12 +110,10 @@ class GetPredictData(object):
                     balls = src.split('zbnum=')[1].split(',')
                     break
 
-        print(self.lottery_name, expert_name, self.expert_id, stage, show_time, balls, self.data_type, self.url)
         if balls:
             self.save_balls(expert_name, stage, show_time, balls)
 
     def dlt_parse(self, data, title):
-        print('大乐透解析')
         balls = []
         try:
             expert_name = lpdb['all_experts'].find_one(
@@ -137,7 +130,6 @@ class GetPredictData(object):
                 expert_name = title[0].split('体彩大')[0]
 
         stage = title[1].split('期')[0]
-        print(stage)
         trs = data.find_all('table', attrs={'class': 'zb_wz_table'})[0].find_all('tr')
         show_time = data.find_all('div', attrs={'class': 'zx_all'})[0].text.split('：')[1].strip()[:-3].strip()
         for tr in trs:
@@ -163,8 +155,6 @@ class GetPredictData(object):
                     balls = src.split('zbnum=')[1].split(',')
                     break
 
-        print(self.lottery_name, expert_name, self.expert_id, stage, show_time, balls, self.data_type, self.url)
-
         if balls:
             self.save_balls(expert_name, stage, show_time, balls)
 
@@ -188,7 +178,6 @@ class GetPredictData(object):
             self.parse_func = self.dlt_parse
 
     def get_predict_data(self, times=0):
-        print(self.url, times)
         found_data = []
         try:
             found_data = list(self.save_predict_data_db.find({'data_type': self.data_type, 'url': self.url}, {'_id': 0}))
@@ -196,10 +185,8 @@ class GetPredictData(object):
             logger.error(e)
 
         if found_data:
-            print('found data')
             self.remove_url()
         else:
-            print('not found data')
             data = None
             header = {'User-Agent': ua(), 'Host': 'www.cjcp.com.cn', 'Accept-Encoding': 'gzip'}
             if times < 3:
@@ -249,7 +236,6 @@ class GetPredictData(object):
         title = ''
         try:
             title = ba_data.find_all('title')[0].text
-            print(self.url, title)
         except Exception:
             self.get_predict_data(times)
 
