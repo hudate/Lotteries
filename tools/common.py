@@ -3,6 +3,8 @@ import os
 import time
 import re
 
+from dataB.auto_begin import Begin
+from dataB.get_lotteries_data import GetBeforeLotteryData
 from settings import lotteries_predict_data_db as lpdb, MAX_EXPERTS_PAGE_COUNT, lotteries_data_db as ldb
 
 
@@ -23,12 +25,15 @@ def avoid_whole_point():
         time.sleep(90)
 
 
-def now_time():
-    return time.strftime('%Y-%m-%d %H:%M:%S')
+def now_time(format_str='%Y-%m-%d %H:%M:%S'):
+    return time.strftime(format_str)
 
 
 def get_the_next_stage(lottery):       # 获取当前未开奖的期数
     db = ldb[lottery]
+    if not list(db.find({})):
+        bg = Begin(lottery)
+        bg.begin()
     stages_dict = list(db.find({}, {'_id': 0, 'stage': 1}))
     last_stage = sorted([list(stage.values())[0] for stage in stages_dict], reverse=True)[0]
     if time.strftime('%m') == '01':
