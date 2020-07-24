@@ -1,8 +1,6 @@
 import time
 from dataB.read_options import ro
 from dataB.get_lotteries_data import GetBeforeLotteryData as GBLD
-from multiprocessing import Pool
-
 from tools.logger import Logger
 logger = Logger(__name__).logger
 
