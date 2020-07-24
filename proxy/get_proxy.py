@@ -26,7 +26,7 @@ class GetProxies(object):
         }
         self.u_a = {}
         self.header = {}
-        self.pool = pool.Pool(30)
+        self.pool = pool.Pool(size=10)
         self.proxy = None
         self.proxy_coll = mongo_setting['proxies_coll']
 
@@ -133,7 +133,7 @@ class GetProxies(object):
             for i in range(1, proxies_setting['stop_pages'] + 1):
                 print('正在爬取 网站:%s，第%s页' % (k, i))
                 url = v + str(i)
-                self.pool.spawn(self.start_request, url, k)
+                self.pool.apply_async(func=self.start_request, args=(url, k))
                 time.sleep(0.5)
         self.pool.join()
 
