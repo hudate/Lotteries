@@ -22,7 +22,7 @@ class GetNowStagePredictUrl(object):
         self.lottery = lottery
         self.predict_db = lpdb[lottery]
         self.data_type = data_type
-        self.kill_ball_db = lpdb[lottery + '_kill']
+        self.kill_db = lpdb[lottery + '_kill']
         self.url = None
         self.now_stage = stage
         self.data_file = data_file
@@ -31,6 +31,31 @@ class GetNowStagePredictUrl(object):
 
         if lottery == 'dlt':
             self.lottery_id = 4
+
+    def get_data_from_db(self, expert_id):
+        if self.data_type < 2:
+            db = self.kill_db
+        else:
+            db = self.predict_db
+
+        find_data = {'data_type': self.data_type, 'expert_id': expert_id, 'stage': self.now_stage}
+        filter_data = {'_id': 0, 'balls': 1}
+        found_data = []
+
+        try:
+            found_data = db.find_one(find_data, filter_data)
+        except Exception as e:
+            logger.error(e)
+        return found_data
+
+    def save_balls(self, balls, expert_id):
+        data = {
+            'expert_id': expert_id,
+            'balls': balls,
+        }
+
+        with open(self.data_file, 'a', encoding='utf-8') as f:
+            f.write(str(data) + '\n')
 
     def parse_url(self, data, expert_id):
         # href_data = []
@@ -76,7 +101,11 @@ class GetNowStagePredictUrl(object):
 
     def run(self):
         for expert_id in self.expert_list:
-            self.get_money_url(expert_id)
+            balls = self.get_data_from_db(expert_id)
+            if not balls:
+                self.get_money_url(expert_id)
+            else:
+                self.save_balls(balls, expert_id)
 
 
 if __name__ == '__main__':
