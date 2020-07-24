@@ -1,3 +1,7 @@
+import sys
+sys.path.append('.')
+sys.path.append('..')
+sys.path.append('../..')
 import os
 import time
 from multiprocessing.dummy import Pool
@@ -24,15 +28,11 @@ class GetMissedPredictData(object):
         ).limit(self.every_times_count)
 
     def run(self):
-        pause_time = 0
         for i in range(self.total_times):
-            t3 = time.time()
+            start_time = time.time()
             start_count = self.articles_miss_urls_db.count_documents({})
-            logger.info('time: %s, totla_times: %s, times: %s, url count: %s' % (time.strftime('%Y-%m-%d %H:%M:%S'),
-                                                                                 self.total_times, (i + 1),
-                                                                                 start_count))
             urls_info = list(self.get_urls())
-            processes = 8
+            processes = 6 if os.cpu_count() < 6 else os.cpu_count()
             p = Pool(processes=processes)
             if urls_info:
                 for url_info in urls_info:
@@ -41,28 +41,23 @@ class GetMissedPredictData(object):
                     p.apply_async(gpd.run)
                 p.close()
                 p.join()
-            t4 = time.time()
+            end_time = time.time()
             end_count = self.articles_miss_urls_db.count_documents({})
-            logger.info('time: %s, times: %s, cost time: %s' % (time.strftime('%Y-%m-%d %H:%M:%S'), (i + 1), (t4 - t3)))
-            record_str = 'start_time: %s, end_time: %s, cost_time: %04.2f, pause_delta_time: %s, pause_time: %s, ' \
-                         'every_times_count: %s start_count: %s, end_count: %s, real_get_count: %s urls_info_length: %s' \
-                         ' processes: %s' % (
-                             time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(t3)),
-                             time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(t4)),
-                             (t4 - t3),
-                             self.pause_delta_time,
-                             pause_time,
-                             self.every_times_count,
-                             start_count,
-                             end_count,
-                             (start_count - end_count),
-                             len(urls_info),
-                             processes
-                         )
+            record_str = 'totla_times: %s, now_times: %s, start_time: %s, end_time: %s, cost_time: %04.2f, ' \
+                         'pause_delta_time: %s, every_times_count: %s, start_count: %s, end_count: %s, ' \
+                         'real_get_count: %s, urls_info_length: %s, processes: %s' % \
+                         (self.total_times, (i + 1), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time)),
+                          time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time)), (end_time - start_time),
+                          self.pause_delta_time, self.every_times_count, start_count, end_count,
+                          (start_count - end_count), len(urls_info), processes)
             logger.info(record_str)
             with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'record_file.txt'), 'a',
                       encoding='utf-8') as f:
                 f.write(record_str + '\n')
+
+            if end_count == 0:
+                logger.info('所有的数据已经爬取完成，退出爬取任务！')
+                break
             time.sleep(self.pause_delta_time)
 
 
