@@ -60,6 +60,3 @@ class GetKJXX(object):
 if __name__ == '__main__':
     kjxx = GetKJXX('dlt')
     lottery_data = kjxx.get_kjxx()
-
-
-
