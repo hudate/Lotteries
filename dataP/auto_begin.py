@@ -129,7 +129,7 @@ class ExpertDataBegin(Process):
             record_str = 'now_times: %s, start_time: %s, end_time: %s, cost_time: %04.2f, ' \
                          'pause_delta_time: %s, every_times_count: %s start_count: %s, end_count: %s, ' \
                          'real_get_count: %s urls_info_length: %s processes: %s' % \
-                         ((times + 1), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time)),
+                         (times, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time)),
                           time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time)), (end_time - start_time),
                           self.pause_delta_time, self.every_times_count, start_count, end_count,
                           (start_count - end_count), len(urls_data), processes)
