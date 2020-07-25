@@ -63,7 +63,7 @@ if __name__ == '__main__':
     pause_delta_time = 90
     t1 = time.time()
     today_start_time = time.mktime(time.strptime(time.strftime('%Y-%m-%d'), '%Y-%m-%d'))
-    today_surplus_time = 24 * 3600 - (time.time() - today_start_time)
+    today_surplus_time = 23 * 3600 - (time.time() - today_start_time)
     total_times = int(today_surplus_time /(1.5 * pause_delta_time))
     gmpd = GetMissedPredictData(total_times, pause_delta_time)
     gmpd.run()
