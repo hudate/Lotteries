@@ -51,9 +51,6 @@ class GetMissedPredictData(object):
                           self.pause_delta_time, self.every_times_count, start_count, end_count,
                           (start_count - end_count), len(urls_info), processes)
             logger.info(record_str)
-            with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'record_file.txt'), 'a',
-                      encoding='utf-8') as f:
-                f.write(record_str + '\n')
 
             if end_count == 0:
                 logger.info('所有的数据已经爬取完成，退出爬取任务！')

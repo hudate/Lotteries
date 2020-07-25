@@ -2,10 +2,20 @@ import json
 import os
 import time
 import re
+import requests
+from settings import lotteries_predict_data_db as lpdb, lotteries_data_db as ldb, GET_NEXT_STAGE_URLS, LOTTERY_DICT_2, \
+    LOTTERY_DICT
+from tools.logger import Logger
+logger = Logger(__name__).logger
 
-from dataB.auto_begin import Begin
-from dataB.get_lotteries_data import GetBeforeLotteryData
-from settings import lotteries_predict_data_db as lpdb, MAX_EXPERTS_PAGE_COUNT, lotteries_data_db as ldb
+
+def get_stage(url):
+    try:
+        res = requests.get(url=url % str(time.time()).split('.')[0])
+        stage = res.text.split("推荐")[1][: -1]
+        return stage
+    except Exception as e:
+        logger.error(e)
 
 
 def clear_db(db):
@@ -30,20 +40,17 @@ def now_time(format_str='%Y-%m-%d %H:%M:%S'):
 
 
 def get_the_next_stage(lottery):       # 获取当前未开奖的期数
-    db = ldb[lottery]
-    if not list(db.find({})):
-        bg = Begin(lottery)
-        bg.begin()
-    stages_dict = list(db.find({}, {'_id': 0, 'stage': 1}))
-    last_stage = sorted([list(stage.values())[0] for stage in stages_dict], reverse=True)[0]
-    if time.strftime('%m') == '01':
-        if last_stage.startswith(time.strftime('%y' + '00')):
-            stage = '20' + str(int(last_stage) + 1)
-        else:
-            stage = str(int(time.strftime('%Y'))) + '001'
+    lottery = lottery if lottery in LOTTERY_DICT_2 else LOTTERY_DICT[lottery]
+    url = GET_NEXT_STAGE_URLS[lottery]
+    last_stage = get_stage(url)
+    if len(last_stage) == 3:
+        return now_time('%Y') + last_stage
+    elif len(last_stage) == 5:
+        return now_time('%Y')[:2] + last_stage
+    elif len(last_stage) == 7:
+        return last_stage
     else:
-        stage = '20' + str(int(last_stage) + 1)
-    return stage
+        logger.error('获取到错误的期数：', last_stage)
 
 
 def set_mail_data(data_file):
@@ -53,7 +60,6 @@ def set_mail_data(data_file):
 
     for key in data:
         if key.endswith('experts_list'):
-            # print(key)
             experts_name_list = []
             find_dict = {'lottery': data['lottery'], 'stage': '20' + data['stage']}
             filter_dict = {'_id': 0, 'expert_name': 1, 'expert_id': 1}
@@ -94,14 +100,11 @@ def set_mail_sender():
 
 
 def set_mail_receivers():
-    receivers = []
-    _receivers = input('请输入收件人列（多个收件人之间请使用","分割，注意不要空格）)：')
-    if ' ' in _receivers:
-        print('error:\t收件人列表不能包含空格！！！')
+    _receivers = input('请输入收件人（多个收件人之间请使用","分割，注意不要空格）)：')
+    receivers = _receivers.strip('[').strip(']').strip(',').strip().split(',')
+    receivers = [receiver.strip('"').strip() for receiver in receivers]
+    if not (receivers or ''.join(receivers)):
         set_mail_receivers()
-    else:
-        receivers = _receivers.strip('[').strip(']').strip(',').split(',')
-        receivers = [receiver.strip('"') for receiver in receivers]
 
     for receiver in receivers:
         find_str = re.compile(r'^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9\u4e00-\u9fa5_-]+(\.[a-zA-Z0-9_-]+)+$')
@@ -117,5 +120,4 @@ def set_cjw_account():
     if account.strip() == '' or password.strip() == '':
         print('error:\t发件人或者密码不能为空！')
         set_cjw_account()
-
     return account, password
