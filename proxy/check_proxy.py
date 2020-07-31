@@ -59,9 +59,9 @@ class CheckProxies(object):
             proxy_type = proxy.split(':')[0]
             new_proxy = {proxy_type: proxy}
             if proxy_type == 'https':
-                self.pool.spawn(self.https_check, new_proxy)
+                self.pool.apply_async(self.https_check, args=(new_proxy, ))
             elif proxy_type == 'http':
-                self.pool.spawn(self.http_check, new_proxy)
+                self.pool.apply_async(self.http_check, args=(new_proxy, ))
         self.pool.join()
 
 
