@@ -31,7 +31,7 @@ class GetExpertsUrls(object):
         self.articles_list_miss_urls_db = miss_urls_db['articles_list']         # 保存丢失的
         self.save_urls_db = miss_urls_db['predict_urls']        # 保存获取到专家每期预测的urls
         self.save_articles_list_urls_db = saved_db['saved_articles_list_urls']      # 保存已经成功获取过文章列表的params
-        self.has_missed_list_urls = has_missed_list_urls
+        self.has_missed_list_urls = has_missed_list_urls        # 判断本次是不是第一次爬取专家的列表，
         self.expert_db = lpdb[LOTTERY_DICT[self.lottery_name] + '_experts']
         self.all_expert_db = lpdb['all_experts']
         self.avoid_experts_db = avoid_experts_db
@@ -61,16 +61,19 @@ class GetExpertsUrls(object):
         found_data = None
         find_data = {'lottery': self.lottery_name, 'data_type': self.data_type,
                      'url': self.url, 'params': self.params, 'expert_id': self.expert_id}
+        logger.info(find_data)
         try:
-            found_data = list(self.save_articles_list_urls_db.find(find_data))
+            found_data = self.save_articles_list_urls_db.find_one(find_data, {'_id': 0})
         except Exception as e:
             logger.error(e)
 
         if not found_data:
             try:
-                found_data = list(self.the_next_stage_saved_articles_list_url.find(find_data))
+                found_data = list(self.the_next_stage_saved_articles_list_url.find(find_data, {'_id': 0}))
             except Exception as e:
                 logger.error(e)
+
+        logger.info(found_data)
 
         if not found_data:
             if times < 4:
@@ -83,7 +86,7 @@ class GetExpertsUrls(object):
                     sp = SP()
                     proxy = sp.set_proxies()
                     try:
-                        req = requests.get(self.url, headers=header, params=self.params, proxies=proxy, timeout=(5, 5),
+                        req = requests.get(self.url, headers=header, params=self.params, proxies=proxy, timeout=(30, 30),
                                            verify=False)
                         data = req.text
                         self.parse_data(data, times)
@@ -107,7 +110,6 @@ class GetExpertsUrls(object):
                     w_db.save_data(self.articles_list_miss_urls_db, insert_data)
         else:
             found_data = found_data[0]
-            found_data.pop('_id')
             self.articles_list_miss_urls_db.delete_many(found_data)
             self.articles_list_miss_urls_db.delete_many(found_data)
 
@@ -222,7 +224,7 @@ class GetExpertsUrls(object):
         else:
             self.get_urls_data(times)
 
-    def get_predict_articles_list(self):
+    def get_predict_articles_list(self):    # 获取本期的预测专家列表
         self.set_lottery_id()
         for page in range(1, self.max_page + 1):
             self.page = page
