@@ -3,7 +3,7 @@ import gevent
 from gevent import monkey; monkey.patch_all()
 import shutil
 import os
-from settings import DAYS_DICT, avoid_experts_db, LOTTERY_DICT_2, DATA_FILE, miss_urls_db, SETUP_FILE, BASE_DIR, \
+from settings import DAYS_DICT, avoid_experts_db, DATA_FILE, miss_urls_db, SETUP_FILE, BASE_DIR, \
     saved_db, REAL, SETUP_TEMPLATE, TIMES_TRANSLATE
 
 os.chdir(BASE_DIR)
@@ -46,8 +46,9 @@ def start_ctrl(lottery, now_stage, work_times):
     logger.info('上班了，上班了！')
     data_file = DATA_FILE % (time.strftime('%Y-%m-%d'), lottery, now_stage)
     sm = SendMail(data_file)
-    logger.info('主机：%s 彩票：%s 期数：%s 数据文件：%s' % (hostname, lottery, now_stage, data_file))
-    sm.send_flush(now_time() + ' 主机：%s, 彩票：%s, 期数：%s 数据文件：%s' % (hostname, lottery, now_stage, data_file))
+    start_str = '主机：%s, 彩票：%s, 期数：%s, 数据文件：%s' % (hostname, lottery, now_stage, data_file)
+    logger.info(start_str)
+    sm.send_flush(start_str)
     ad = AnalyseData(lottery, now_stage, data_file)
     global process_flag
     process_flag = 1
@@ -57,19 +58,21 @@ def start_ctrl(lottery, now_stage, work_times):
             pause_delta_time=work_times['pause_delta_time'],
             every_times_count=work_times['every_times_count']
         )
+        
+        common_str = '%s, %s,' % (now_time(), hostname)
 
         for key in work_times:
             if time.strftime('%H:%M') == work_times[key]:
                 if key == "end_time":  # 今天结束了
                     logger.info('下班，明天是个好日子！!')
                     process_flag = 0
-                    sm.send_flush('%s %s' % (now_time(), hostname) + ' 下班，明天是个好日子！！')
+                    sm.send_flush(common_str + ' 下班，明天是个好日子！！')
                     os.kill(os.getpid(), signal.SIGKILL)
 
                 # 开始获取往期的开奖数据
                 if key == 'get_lotteries_data':
                     logger.info('开始获取往期的开奖数据。')
-                    sm.send_flush('%s %s' % (now_time(), hostname) + ' 开始获取往期的开奖数据。')
+                    sm.send_flush(common_str + ' 开始获取往期的开奖数据。')
                     bag = abg.Begin(lottery)  # 获取往期的开奖数据
                     bag.begin()
 
@@ -78,23 +81,16 @@ def start_ctrl(lottery, now_stage, work_times):
                     times_zh = TIMES_TRANSLATE[key.rsplit('_', 1)[1]]
                     times_str = '%s获取代理。' % times_zh
                     logger.info(times_str)
-                    sm.send_flush('%s %s' % (now_time(), hostname) + ' ' + times_str)
+                    sm.send_flush(common_str + ' ' + times_str)
                     clear_proxies_db()
                     gp = GetProxies()
                     gp.start()
-
-                if key == 'check_the_next_stage_experts_articles_list':
-                    logger.info('检查所有专家的文章列表是否有漏爬!')
-                    sm.send_flush('%s %s' % (now_time(), hostname) + ' 检查所有专家的文章列表是否有漏爬！')
-                    cal = CAL(LOTTERY_DICT_2[lottery], now_stage)
-                    cal.start_check()
-                    bg.get_predict_urls(1)
 
                 # 获取当前待开奖的预测数据
                 if key.startswith('get_the_next_stage_experts_all_predict_data'):
                     times_zh = TIMES_TRANSLATE[key.rsplit('_', 1)[1]]
                     times_str = '%s获取每个专家的所有预测数据。' % times_zh
-                    sm.send_flush('%s %s' % (now_time(), hostname) + ' ' + times_str)
+                    sm.send_flush(common_str + ' ' + times_str)
                     bg.get_predict_data()
 
                 # 获取本期的所有专家的预测数据url列表
@@ -102,8 +98,18 @@ def start_ctrl(lottery, now_stage, work_times):
                     times_zh = TIMES_TRANSLATE[key.rsplit('_', 1)[1]]
                     times_str = '%s获取下期每个专家的预测文章的URL列表。' % times_zh
                     logger.info(times_str)
-                    sm.send_flush('%s %s' % (now_time(), hostname) + ' ' + times_str)
-                    bg.get_predict_urls()
+                    sm.send_flush(common_str + ' ' + times_str)
+                    if times_zh >= '03rd':
+                        bg.get_predict_urls(1)
+                    else:
+                        bg.get_predict_urls(0)
+
+                if key == 'check_the_next_stage_experts_articles_list':
+                    logger.info('检查所有专家的文章列表是否有漏爬!')
+                    sm.send_flush(common_str + ' 检查所有专家的文章列表是否有漏爬！')
+                    cal = CAL(LOTTERY_DICT_2[lottery], now_stage)
+                    cal.start_check()
+                    bg.get_predict_urls(1)
 
                 # 开始分析“预测专家列表”，并记入DATA_FILE
                 if key == 'get_the_next_stage_experts_list':
@@ -116,7 +122,7 @@ def start_ctrl(lottery, now_stage, work_times):
                     times_zh = TIMES_TRANSLATE[key.rsplit('_', 1)[1]]
                     times_str = '%s获取下期所有专家。' % times_zh
                     logger.info(times_str)
-                    sm.send_flush('%s %s' % (now_time(), hostname) + ' ' + times_str)
+                    sm.send_flush(common_str + ' ' + times_str)
                     bg.get_experts()
 
                 # 依据“预测专家列表”获取“专家预测数据”
@@ -130,7 +136,7 @@ def start_ctrl(lottery, now_stage, work_times):
                     times_zh = TIMES_TRANSLATE[key.rsplit('_', 1)[1]]
                     times_str = '%s发送邮件。' % times_zh
                     logger.info(times_str)
-                    sm.send_flush('%s %s' % (now_time(), hostname) + ' ' + times_str)
+                    sm.send_flush(common_str + ' ' + times_str)
                     sm.send_mail()
 
                 # 使用像周五一样的手段去爬取数据
@@ -148,6 +154,7 @@ def start_ctrl(lottery, now_stage, work_times):
                     logger.info('开始清除数据库：%s！' %
                                 ([lpdb[lottery + '_experts'], avoid_experts_db, miss_urls_db['articles_list']]))
                     try:
+                        next_stage_db.drop()
                         lpdb[lottery + '_experts'].drop()
                         lpdb[lottery + '_right_location'].drop()
                         saved_db['the_next_stage_saved_predict_urls'].drop()
@@ -156,7 +163,7 @@ def start_ctrl(lottery, now_stage, work_times):
                         remove_browser_tmp('/tmp')
                         logger.info('成功清除数据库：%s！' %
                                     ([lpdb[lottery + '_experts'], avoid_experts_db, miss_urls_db['articles_list']]))
-                        sm.send_flush('%s %s' % (now_time(), hostname) + ' 开始清除数据库完成！！')
+                        sm.send_flush(common_str + ' 清除数据库完成！！')
                     except Exception as e:
                         logger.error(e)
 
