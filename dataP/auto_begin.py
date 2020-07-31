@@ -61,14 +61,14 @@ class ExpertDataBegin(Process):
             find_data = {'lottery': self.lottery_name}
             filter_data = {'_id': 0}
             try:
-                found_data = list(db.find(find_data, filter_data))
+                found_data = list(db.find(find_data, filter_data).limit(150))
             except Exception as e:
                 logger.error(e)
 
             logger.info('times: %s, found_data_count: %s' % (times, len(list(found_data))))
 
-            if len(found_data) > 0:
-                p = Pool(processes=os.cpu_count() * 5)
+            if found_data:
+                p = Pool(processes=40)
                 for expert_data in found_data:
                     expert_id = expert_data['expert_id']
                     data_type = expert_data['data_type']
