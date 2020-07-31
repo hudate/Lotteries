@@ -41,6 +41,6 @@ class Begin(object):
 
 
 if __name__ == '__main__':
-    lottery = 'ssq'
+    lottery = 'dlt'
     bg = Begin(lottery)
     bg.begin()
