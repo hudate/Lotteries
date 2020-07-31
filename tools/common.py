@@ -4,7 +4,7 @@ import time
 import re
 import requests
 from settings import lotteries_predict_data_db as lpdb, lotteries_data_db as ldb, GET_NEXT_STAGE_URLS, LOTTERY_DICT_2, \
-    LOTTERY_DICT
+    LOTTERY_DICT, next_stage_db
 from tools.logger import Logger
 logger = Logger(__name__).logger
 
@@ -15,7 +15,8 @@ def get_stage(url):
         stage = res.text.split("推荐")[1][: -1]
         return stage
     except Exception as e:
-        logger.error(e)
+        logger.error('error url: %s' % url)
+        logger.error('error info: %s' % e)
 
 
 def clear_db(db):
@@ -40,17 +41,32 @@ def now_time(format_str='%Y-%m-%d %H:%M:%S'):
 
 
 def get_the_next_stage(lottery):       # 获取当前未开奖的期数
+    next_stage = ''
     lottery = lottery if lottery in LOTTERY_DICT_2 else LOTTERY_DICT[lottery]
-    url = GET_NEXT_STAGE_URLS[lottery]
-    last_stage = get_stage(url)
-    if len(last_stage) == 3:
-        return now_time('%Y') + last_stage
-    elif len(last_stage) == 5:
-        return now_time('%Y')[:2] + last_stage
-    elif len(last_stage) == 7:
-        return last_stage
-    else:
-        logger.error('获取到错误的期数：', last_stage)
+    try:
+        next_stage = next_stage_db.find_one({}, {'_id': 0, 'stage': 1})['stage']
+    except Exception as e:
+        logger.error(e)
+
+    if not next_stage:
+        url = GET_NEXT_STAGE_URLS[lottery]
+        last_stage = get_stage(url)
+        if len(last_stage) == 3:
+            next_stage = now_time('%Y') + last_stage
+        elif len(last_stage) == 5:
+            next_stage = now_time('%Y')[:2] + last_stage
+        elif len(last_stage) == 7:
+            next_stage = last_stage
+        else:
+            logger.error('获取到错误的期数：', last_stage)
+
+        if next_stage:
+            try:
+                next_stage_db.insert_one({'stage': next_stage})
+            except Exception as e:
+                logger.error(e)
+
+    return next_stage
 
 
 def set_mail_data(data_file):
