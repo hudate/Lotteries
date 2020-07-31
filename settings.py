@@ -48,6 +48,9 @@ miss_urls_db = {
     'predict_urls': db['missed_predict_urls']
 }
 
+# 这是全局变量，指”下一期“（即将开奖的那期）
+next_stage_db = db['next_stage']
+
 avoid_experts_db = db['avoid_experts']      # 计入某些不符合要求的专家
 
 AVOID_EXPERTS = []
@@ -128,16 +131,16 @@ LOTTERY_BALLS_COUNT = {'ssq': [6, 1], 'dlt': [5, 2]}
 
 BASE_DIR = os.path.dirname(__file__)
 
-SETUP_FILE = os.sep.join([BASE_DIR, 'setup.json'])
-SETUP_TEMPLATE = os.sep.join([BASE_DIR, 'setup_template.json'])
+SETUP_FILE = os.path.join(BASE_DIR, 'setup.json')
+SETUP_TEMPLATE = os.path.join(BASE_DIR, 'setup_template.json')
 
 # 日期-彩票-期数
-DATA_FILE = os.sep.join([BASE_DIR, 'record', '%s_%s_%s.json'])        # 用于保存各种中间数据
+DATA_FILE = os.path.join(BASE_DIR, 'record', '%s_%s_%s.json')        # 用于保存各种中间数据
 
 # 设置cookies的计算基数
 COOKIES_BASE_COUNT = 500
 
-# 中英文对照
+# 爬取次数中英文对照
 TIMES_TRANSLATE= {
     '01st': '初次', '02nd': '第二次', '03rd': '第三次', '04th': '第四次', '05th': '第五次', '06th': '第六次', '07th': '第七次',
     '08th': '第八次', '09th': '第九次', '10th': '第十次', '11th': '第十一次', '12th': '第十二次', '13th': '第十三次',
